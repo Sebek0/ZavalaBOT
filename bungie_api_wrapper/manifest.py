@@ -1,3 +1,5 @@
+from glob import escape
+from weakref import KeyedRef
 import requests
 import json
 import os
@@ -40,7 +42,6 @@ class Manifest:
                 print('Manifest version is up to date!')
     
     def get_manifest_files(self):
-        """Check manifest directory."""
         
         def download_manifest_files():
             """Download and save manifest definitions files."""
@@ -206,9 +207,12 @@ class Manifest:
                     'stats': character_stat,
                     'items': items_details                        
                     }
-        except Exception as error: # write proper Exception handler!
-            print(f'Manifest error: {error}')
-        
+                
+        except KeyError as key_error:
+            print(f'{key_error} in characters manifest function...')
+        except ValueError as value_error:
+            print(f'{value_error} in characters manifest function...')
+            
         return characters
     
     def decode_clan_leaderboard_from_manifest(): # will do in future
@@ -278,8 +282,12 @@ class Manifest:
                 'perks': item_perks,
                 'stats': item_stats
             }
-        except Exception as error:
-            print(f'MANIFEST ERROR: {error}')
+            
+        except KeyError as key_error:
+            print(f'{key_error} in item manifest function...')
+        except ValueError as value_error:
+            print(f'{value_error} in item manifest function...')
+            
         return item_data
 
 def main():
