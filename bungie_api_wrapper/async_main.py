@@ -151,7 +151,7 @@ async def get_clan_members(group_id):
 
 
 async def main():
-    await get_characters('sebek.', 6034, 3)sdada
+    await get_characters('sebek.', 6034, 3)
     
 if __name__ == '__main__':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
