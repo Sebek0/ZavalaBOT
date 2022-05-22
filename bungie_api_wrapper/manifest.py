@@ -1,12 +1,11 @@
-from glob import escape
-from weakref import KeyedRef
 import requests
 import json
 import os
-import urllib
+import logging
 
 from dotenv import load_dotenv
 
+logger = logging.getLogger('bungie_wrapper')
 
 class Manifest:
     def __init__(self) -> None:
@@ -209,9 +208,9 @@ class Manifest:
                     }
                 
         except KeyError as key_error:
-            print(f'{key_error} in characters manifest function...')
+            logger.error(f'{key_error} in characters manifest function.')
         except ValueError as value_error:
-            print(f'{value_error} in characters manifest function...')
+            logger.error(f'{value_error} in characters manifest function.')
             
         return characters
     
@@ -284,16 +283,16 @@ class Manifest:
             }
             
         except KeyError as key_error:
-            print(f'{key_error} in item manifest function...')
+            logger.error(f'{key_error} in characters manifest function.')
         except ValueError as value_error:
-            print(f'{value_error} in item manifest function...')
+            logger.error(f'{value_error} in characters manifest function.')
             
         return item_data
 
 def main():
     manifest = Manifest()
     manifest.check_manifest()
-    print('Done')
+    logger.info('Manifest has been downloaded')
     
 if __name__ == '__main__':
     main()

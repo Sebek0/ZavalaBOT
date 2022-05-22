@@ -1,14 +1,20 @@
 import discord
+import logging
+import os
 
 from discord import app_commands
 from discord.ext import commands
+from dotenv import load_dotenv
 from discord_bot.embeds import MessageLogEmbed, ChannelLogEmbed
+
+load_dotenv()
+logger = logging.getLogger('discord_bot')
 
 
 class Listeners(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.log_channel_id = 957923111876042852
+        self.log_channel_id = int(os.getenv('LOG_CHANNEL_ID'))
         super().__init__()
     
     @commands.Cog.listener()
@@ -18,6 +24,7 @@ class Listeners(commands.Cog):
             log_message = await log_embed.embed('new', message.author, message)
             log_channel = self.bot.get_channel(self.log_channel_id)
             await log_channel.send(embed=log_message)
+            logger.info(f'{message.author} sent message in {message.channel.name}.')
     
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
@@ -28,6 +35,7 @@ class Listeners(commands.Cog):
                                                 after=after)
             log_channel = self.bot.get_channel(self.log_channel_id)
             await log_channel.send(embed=log_message)
+            logger.info(f'{before.author} updated message in {before.channel.name}.')
     
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -35,32 +43,33 @@ class Listeners(commands.Cog):
             log_embed = MessageLogEmbed()
             log_message = await log_embed.embed('delete', message.author, message)
             log_channel = self.bot.get_channel(self.log_channel_id)
-            await log_channel.send(embed=log_message)    
+            await log_channel.send(embed=log_message)
+            logger.info(f'Message in {message.channel.name} has been deleted.')
     
     @commands.Cog.listener()
     async def on_guild_channel_create(self, channel):
-        print(channel.category)
-        print(channel.id)
-        print(channel.name)
         log_embed = ChannelLogEmbed()
         log_message = await log_embed.embed('new', channel)
         log_channel = self.bot.get_channel(self.log_channel_id)
-        await log_channel.send(embed=log_message)
+        await log_channel.send(embed=log_message)  
+        logger.info(f'Channel {channel.name} has been created.')
+        
     
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before, after):
         log_embed = ChannelLogEmbed()
         log_message = await log_embed.embed('update', before=before, after=after)
         log_channel = self.bot.get_channel(self.log_channel_id)
-        await log_channel.send(embed=log_message)     
+        await log_channel.send(embed=log_message)   
+        logger.info(f'Channel {before.name} has been updated to {after.name}.')  
         
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel):
-        print(channel.category)
         log_embed = ChannelLogEmbed()
         log_message = await log_embed.embed('delete', channel)
         log_channel = self.bot.get_channel(self.log_channel_id)
         await log_channel.send(embed=log_message)
+        logger.info(f'Channel {channel.name} has been deleted.')
                   
     @commands.Cog.listener()    
     async def on_disconnect(self):
