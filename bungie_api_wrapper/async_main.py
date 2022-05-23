@@ -2,13 +2,22 @@ import os
 import asyncio
 import json
 import time
-import sys
+import logging
 
 from dotenv import load_dotenv
 
 from bungie_api_wrapper import BAPI
+from custom_logging import CustomFormatter
 
 load_dotenv()
+
+formatter = CustomFormatter()
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+logger = logging.getLogger('bungie_wrapper')
+logger.addHandler(stream_handler)
+logger.setLevel(logging.DEBUG)
 
 API_KEY = os.getenv('BUNGIE_API_KEY')
 
@@ -90,9 +99,9 @@ async def get_characters(name, code, platform):
                     
                     items[b_hash] = item_raw_data
             except KeyError as k_error:
-                print(f'{k_error} Bucket: {item[i]["bucketHash"]} \
+                logger.error(f'{k_error} Bucket: {item[i]["bucketHash"]} \
                       Item: {item[i]["itemHash"]} Class: {char_data["classHash"]}')
-        
+                
         characters_informations[char_data['classHash']] = {
             'dateLastPlayed': char_data['dateLastPlayed'],
             'emblemBackgroundPath': char_data['emblemBackgroundPath'],
@@ -144,7 +153,7 @@ async def get_clan_members(group_id):
                 member = f'{name}#{code}'
                 members_list.append(member)   
         except KeyError as k_error:
-            print(k_error)
+            logger.error(k_error)
     
     await destiny.close()
     return members_list

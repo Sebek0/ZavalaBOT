@@ -1,4 +1,5 @@
 import discord
+import logging
 
 from discord_bot.embeds import ClassEmbed
 from dotenv import load_dotenv
@@ -7,6 +8,8 @@ from bungie_api_wrapper.async_main import get_characters
 from bungie_api_wrapper.manifest import Manifest
 
 load_dotenv()
+
+logger = logging.getLogger('discord_bot')
 
 
 class DeleteMessageView(discord.ui.View):
@@ -18,6 +21,7 @@ class DeleteMessageView(discord.ui.View):
     async def delete_button_callback(self, interaction: discord.Interaction,
                                      button: discord.ui.Button):
         await interaction.message.delete()
+        logger.info(f'{interaction.user.display_name} deleted {interaction.message.content}')
  
  
 class WarlockButton(discord.ui.Button):
@@ -35,6 +39,7 @@ class WarlockButton(discord.ui.Button):
         warlock_embed = await self.warlock_embed.embed('Warlock', 0x008f11,
                                                        self.user_name, 'https://bit.ly/3llqjRv')
         await interaction.response.edit_message(embed=warlock_embed, view=delete_view)
+        logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
         
 
 class TitanButton(discord.ui.Button):
@@ -52,7 +57,7 @@ class TitanButton(discord.ui.Button):
         titan_embed = await self.titan_embed.embed('Titan', 0xc80404,
                                                    self.user_name, 'https://bit.ly/3llqjRv')
         await interaction.response.edit_message(embed=titan_embed, view=delete_view)
-        
+        logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
 
 class HunterButton(discord.ui.Button):
     def __init__(self, decoded_data, user_name):
@@ -69,7 +74,7 @@ class HunterButton(discord.ui.Button):
         hunter_embed = await self.hunter_embed.embed('Hunter', 0x0d0490,
                                                      self.user_name, 'https://bit.ly/3llqjRv')
         await interaction.response.edit_message(embed=hunter_embed, view=delete_view)
-        
+        logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
         
 class SelectCharacterView(discord.ui.View):
     def __init__(self, decoded_data, user_name):

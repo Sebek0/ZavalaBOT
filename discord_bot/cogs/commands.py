@@ -1,12 +1,15 @@
 import discord
 import asyncio
 import datetime
+import logging
 
 from discord import app_commands
 from discord.ext import commands
 
 # Importing commands view
 from discord_bot.bot_ui import CheckModal
+
+logger = logging.getLogger('discord_bot')
 
 
 class EventCog(commands.GroupCog, name="event"):
@@ -47,9 +50,10 @@ class GuardianCog(commands.GroupCog, name='guardian'):
         self.bot = bot
         super().__init__()
         
-    @app_commands.command(name='check', description='Check Destiny2 character loadout')
+    @app_commands.command(name='check', description='Check Destiny 2 characters loadout')
     async def guardian_check(self, interaction: discord.Interaction):
         await interaction.response.send_modal(CheckModal())
+        logger.info(f'{interaction.user.display_name} used guardian check command.')
         
 
 class UtilityCommands(commands.Cog):
@@ -83,8 +87,8 @@ class UtilityCommands(commands.Cog):
         if timer <= 0:
             await message.delete()
             await interaction.channel.send(interaction.user.mention)
-           
+                    
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(EventCog(bot), guild=discord.Object(id=760629187932454935))
-    await bot.add_cog(GuardianCog(bot), guild=discord.Object(id=760629187932454935))
-    await bot.add_cog(UtilityCommands(bot), guild=discord.Object(id=760629187932454935))
+    commands_list = [EventCog(bot), GuardianCog(bot), UtilityCommands(bot)] 
+    for command in commands_list:
+        await bot.add_cog(command, guild=discord.Object(id=760629187932454935))
