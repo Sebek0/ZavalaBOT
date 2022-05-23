@@ -12,39 +12,6 @@ from discord_bot.bot_ui import CheckModal
 logger = logging.getLogger('discord_bot')
 
 
-class EventCog(commands.GroupCog, name="event"):
-    def __init__(self, bot: commands.Bot) -> None:
-        self.bot = bot
-        self.x = list()
-        super().__init__()  
-    
-    @app_commands.command(name="add", description='Add custom event')
-    async def add_custom_event(self, interaction: discord.Interaction, event: str) -> None:
-        """ /event add 'event' """
-        self.x.append(str(event))
-        await interaction.response.send_message(f'adding... {event}', ephemeral=True)
-    
-    @app_commands.command(name="remove", description='Remove custom event')
-    async def remove_custom_event(self, interaction: discord.Interaction, event: str) -> None:
-        """ /event remove 'event' """
-        self.x.remove(str(event))
-        await interaction.response.send_message(f'removing... {event}', ephemeral=True)
-    
-    @app_commands.command(name='create', description='Create Destiny2 event')   
-    async def create_custom_event(self, interaction: discord.Interaction) -> None:
-        """ /event create """
-        pass
-        #view = View()
-        #await interaction.response.send_message('Creating custom event...', view=view, ephemeral=True)
-    
-    @app_commands.command(name='list', description='Custom events list')
-    async def event_list(self, interaction: discord.Interaction) -> None:
-        if len(self.x) != 0:
-           await interaction.response.send_message(f"{', '.join(self.x)}", ephemeral=True) 
-        else:
-           await interaction.response.send_message(f'Event list is empty!', ephemeral=True)
-
-
 class GuardianCog(commands.GroupCog, name='guardian'):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -54,7 +21,22 @@ class GuardianCog(commands.GroupCog, name='guardian'):
     async def guardian_check(self, interaction: discord.Interaction):
         await interaction.response.send_modal(CheckModal())
         logger.info(f'{interaction.user.display_name} used guardian check command.')
+
+
+class ClanCog(commands.GroupCog, name='clan'):
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
+        super().__init__()
+    
+    @app_commands.command(name='members', description='Display Destiny 2 clan members.')
+    async def clan_members(self, interaction: discord.Interaction):
+        pass
+    
+    @app_commands.command(name='admins', description='Display Destiny 2 clan admins.')
+    async def clan_admins(self, interaction: discord.Interaction):
         
+
+
 
 class UtilityCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
