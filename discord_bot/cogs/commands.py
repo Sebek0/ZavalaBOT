@@ -2,17 +2,24 @@ import discord
 import asyncio
 import datetime
 import logging
+import os
 
 from discord import app_commands
 from discord.ext import commands
+from dotenv import load_dotenv
+from requests import delete
 
 from bungie_api_wrapper.manifest import Manifest
-from bungie_api_wrapper.async_main import get_characters
+from bungie_api_wrapper.async_main import get_characters, get_clan_informations, get_clan_members
 
 # Importing commands view
-from discord_bot.bot_ui import CheckModal, SelectCharacterView
+from discord_bot.bot_ui import CheckModal, SelectCharacterView, DeleteMessageView
+
+# Importing commands embeds
+from discord_bot.embeds import BungieClanEmbed
 
 logger = logging.getLogger('discord_bot')
+load_dotenv
 
 
 class GuardianCog(commands.GroupCog, name='guardian'):
@@ -69,21 +76,57 @@ class ClanCog(commands.GroupCog, name='clan'):
         self.bot = bot
         super().__init__()
     
-    @app_commands.command(name='members', description='Display Destiny 2 clan members.')
-    async def clan_members(self, interaction: discord.Interaction):
-        pass
-    
-    @app_commands.command(name='admins', description='Display Destiny 2 clan admins.')
-    async def clan_admins(self, interaction: discord.Interaction):
-        pass
-    
     @app_commands.command(name='leaderboard', description='Display Destiny 2 clan leaderboard.')
     async def clan_leaderboard(self, interaction: discord.Interaction):
         pass
     
     @app_commands.command(name='info', description='Display Destiny 2 clan informations.')
-    async def clan_info(self, interaction: discord.Interaction):
-        pass
+    async def clan_info(self, interaction: discord.Interaction, group_id: int = None):
+        await interaction.response.defer()
+        delete_view = DeleteMessageView()
+        if group_id is None:
+            group_id = os.getenv('BUNGIE_GROUP_ID')
+            clan_info = await get_clan_informations(group_id)
+            clan_embed = BungieClanEmbed()
+            clan_embed = await clan_embed.info_embed(
+                name=clan_info['name'],
+                callsign=clan_info['callsign'],
+                motto=clan_info['motto'],
+                about=clan_info['about'],
+                author_icon_url=self.bot.user.display_avatar,
+                clan_icon_url=clan_info['clan_icon_url'],
+                founder_name=clan_info['founder'],
+                level_cap=clan_info['level_cap'],
+                members_list=clan_info['members_list'],
+                members_count=clan_info['members_count'],
+                creation_date=clan_info['creation_date'],
+                exp=clan_info['exp'],
+                level=clan_info['level'],
+                interaction=interaction
+            )
+            await interaction.followup.send(embed=clan_embed, view=delete_view)
+            logger.info(f'{interaction.user.display_name} used clan info command.')
+        else:
+            clan_info = await get_clan_informations(group_id)
+            clan_embed = BungieClanEmbed()
+            clan_embed = await clan_embed.info_embed(
+                name=clan_info['name'],
+                callsign=clan_info['callsign'],
+                motto=clan_info['motto'],
+                about=clan_info['about'],
+                author_name=self.bot.user.display_name,
+                author_icon_url=self.bot.user.display_avatar,
+                clan_icon_url=clan_info['clan_icon_url'],
+                founder_name=clan_info['founder'],
+                level_cap=clan_info['level_cap'],
+                members_list=clan_info['members_list'],
+                members_count=clan_info['members_count'],
+                creation_date=clan_info['creation_date'],
+                exp=clan_info['exp'],
+                level=clan_info['level']
+            )
+            await interaction.followup.send(embed=clan_embed, view=delete_view)
+            logger.info(f'{interaction.user.display_name} used clan info command.')
         
 
 class UtilityCommands(commands.Cog):
