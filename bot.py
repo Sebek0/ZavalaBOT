@@ -48,7 +48,7 @@ class Bot(commands.Bot):
             await self.load_extension('discord_bot.cogs.listeners')
             logger.info('Loaded extensions.')
         except discord.DiscordException as discord_error:
-            logger.error(discord_error)
+            logger.error(f'{discord_error}')
               
 bot = Bot()
 
