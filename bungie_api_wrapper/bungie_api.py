@@ -2,6 +2,9 @@ import urllib
 import aiohttp
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DESTINY2_URL = os.getenv('DESTINY2_URL')
 USER_URL = os.getenv('USER_URL')
@@ -294,7 +297,7 @@ class BungieAPI:
         return await self._get_request(url)
     
     async def get_clan_leaderboard(self, group_id, maxtop, modes, stat_id):
-        """Get clan leaderboard
+        """Get clan leaderboard.
         
         Args:
             group_id (int): Group ID of the clan.
@@ -312,6 +315,21 @@ class BungieAPI:
             '&statid={}'
         url = url.format(group_id, maxtop, modes, stat_id)
         
+        return await self._get_request(url)
+    
+    async def get_clan(self, group_id):
+        """Get clan data.
+        
+        Args:
+            group_id (int): Group's id.
+        
+        Returns:
+            _get_request (json): request Response.
+        """
+        
+        url = GROUP_URL + '{}/'
+        url = url.format(group_id)
+
         return await self._get_request(url)
     
     
