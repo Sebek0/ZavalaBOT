@@ -16,7 +16,7 @@ class DeleteMessageView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=3000)
         
-    @discord.ui.button(label='Delete check', custom_id='delete',
+    @discord.ui.button(label='Delete', custom_id='delete',
                        style=discord.ButtonStyle.danger)
     async def delete_button_callback(self, interaction: discord.Interaction,
                                      button: discord.ui.Button):
