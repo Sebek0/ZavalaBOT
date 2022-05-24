@@ -45,7 +45,7 @@ async def get_characters(name, code, platform):
         platform, {'displayName': name, 'displayNameCode': code}
     )
     destiny_membership_id = destiny_membership_id['Response'][0]['membershipId']
-    
+
     # get user profile from API request
     profile = await destiny.api.get_destiny_profile(destiny_membership_id,
                                                     3, [100, 200, 205])
@@ -136,34 +136,66 @@ async def get_characters(name, code, platform):
         json.dump(characters_informations, indent=2, sort_keys=True, fp=file)
     return characters_informations
 
+async def get_clan_informations(group_id: int):
+    destiny = BAPI(API_KEY)
+    
+    response = await destiny.api.get_clan(group_id)
+    response = response['Response']
+    members_list = await get_clan_members(group_id)
+    await destiny.close()
+    
+    creation_date = response['detail']['creationDate'].replace("T", " ").replace("Z", "")
+    avatar_path_url = 'https://www.bungie.net/' + response['detail']['avatarPath']
+    
+    informations = {
+        'name': response['detail']['name'],
+        'about': f"{response['detail']['about']}",
+        'callsign': response['detail']['clanInfo']['clanCallsign'],
+        'motto': response['detail']['motto'],
+        'clan_icon_url': avatar_path_url,
+        'founder': response['founder']['bungieNetUserInfo']['supplementalDisplayName'],
+        'members_list': members_list,
+        'members_count': response['detail']['memberCount'],
+        'creation_date': creation_date,
+        'exp': response['detail']['clanInfo']['d2ClanProgressions']['584850370'] \
+            ['currentProgress'],
+        'level':  response['detail']['clanInfo']['d2ClanProgressions']['584850370'] \
+            ['level'],
+        'level_cap':  response['detail']['clanInfo']['d2ClanProgressions']['584850370'] \
+            ['levelCap']
+    }
+     
+    return informations
+    
 async def get_clan_members(group_id):
     destiny = BAPI(API_KEY)
     members_list = []
     
     response = await destiny.api.get_destiny_clan_members(group_id)
     response = response['Response']['results']
-    
-    for x in response:
-        try:
-            name = x['bungieNetUserInfo']['bungieGlobalDisplayName']
-            code = x['bungieNetUserInfo']['bungieGlobalDisplayNameCode']
-            if not name:
-                pass
-            else:
-                member = f'{name}#{code}'
-                members_list.append(member)   
-        except KeyError as k_error:
-            logger.error(k_error)
+    try:
+        for x in response:
+            try:
+                name = x['bungieNetUserInfo']['bungieGlobalDisplayName']
+                code = x['bungieNetUserInfo']['bungieGlobalDisplayNameCode']
+                if not name:
+                    pass
+                else:
+                    member = f'{name}#{code}'
+                    #memberencode = member.encode('ASCII', 'ignore')
+                    #memberdecode = memberencode.decode()
+                    members_list.append(member)   
+            except KeyError as k_error:
+                logger.error(k_error)
+    except KeyError as error:
+        logger.error(error)
     
     await destiny.close()
     return members_list
 
 
 async def main():
-    await get_characters('sebek.', 6034, 3)
+    pass
     
 if __name__ == '__main__':
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    start_time = time.time()
-    asyncio.run(main())
-    print("--- %s seconds ---" % (time.time() - start_time))           
+    asyncio.run(main())        
