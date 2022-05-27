@@ -13,7 +13,7 @@ from bungie_api_wrapper.manifest import Manifest
 from bungie_api_wrapper.async_main import get_characters, get_clan_informations, get_clan_members
 
 # Importing commands view
-from discord_bot.bot_ui import CheckModal, SelectCharacterView, DeleteMessageView
+from discord_bot.bot_ui import *
 
 # Importing commands embeds
 from discord_bot.embeds import BungieClanEmbed
@@ -78,8 +78,10 @@ class ClanCog(commands.GroupCog, name='clan'):
     
     @app_commands.command(name='leaderboard', description='Display Destiny 2 clan leaderboard.')
     async def clan_leaderboard(self, interaction: discord.Interaction):
-        pass
-    
+        leaderboard_type = SelectClanLeaderboardType()
+        await interaction.response.defer()
+        await interaction.followup.send(content='Test', view=leaderboard_type)
+        
     @app_commands.command(name='info', description='Display Destiny 2 clan informations.')
     async def clan_info(self, interaction: discord.Interaction, group_id: int = None):
         await interaction.response.defer()

@@ -1,3 +1,4 @@
+from time import time
 import discord
 import logging
 
@@ -59,6 +60,7 @@ class TitanButton(discord.ui.Button):
         await interaction.response.edit_message(embed=titan_embed, view=delete_view)
         logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
 
+
 class HunterButton(discord.ui.Button):
     def __init__(self, decoded_data, user_name):
         super().__init__(
@@ -75,10 +77,124 @@ class HunterButton(discord.ui.Button):
                                                      self.user_name, 'https://bit.ly/3llqjRv')
         await interaction.response.edit_message(embed=hunter_embed, view=delete_view)
         logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
+
+
+class ClanLeaderboardPVPButton(discord.ui.Button):
+    def __init__(self, label, custom_id, style):
+        super().__init__(
+            label=label,
+            custom_id=custom_id,
+            style=style
+        )
         
+    async def callback(self, interaction: discord.Interaction):
+        if self.custom_id == 'cl_pvp':
+            pvp_leaderboard_view = ClanLeaderboardPVP()
+            await interaction.response.edit_message(content='PVP Leaderboard TEST',
+                                                view=pvp_leaderboard_view)
+        elif self.custom_id == 'cl_too':
+            await interaction.response.edit_message(content='Trials', view=None)
+        elif self.custom_id == 'cl_ib':
+            await interaction.response.edit_message(content='Iron Banner', view=None)
+        elif self.custom_id == 'cl_qp':
+            await interaction.response.edit_message(content='Quickplay', view=None)
+        elif self.custom_id == 'cl_comp':
+            await interaction.response.edit_message(content='Survival', view=None) 
+        
+
+class ClanLeaderboardPVEButton(discord.ui.Button):
+    def __init__(self, label, custom_id, style):
+        super().__init__(
+            label=label,
+            custom_id=custom_id,
+            style=style
+        )
+    
+    async def callback(self, interaction: discord.Interaction):
+        if self.custom_id == 'cl_pve':
+            pve_leaderboard_view = ClanLeaderboardPVE()
+            await interaction.response.edit_message(content='PVE Leaderboard TEST',
+                                                    view=pve_leaderboard_view)
+
+
+class SelectClanLeaderboardType(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=600)
+        leaderboard_types = {
+            'pvp': ClanLeaderboardPVPButton(label='PvP', custom_id='cl_pvp',
+                                            style=discord.ButtonStyle.red),
+            'pve': ClanLeaderboardPVEButton(label='PvE', custom_id='cl_pve',
+                                            style=discord.ButtonStyle.blurple)
+        }
+        
+        for leaderboard_type in leaderboard_types.keys():
+            self.add_item(leaderboard_types[leaderboard_type])
+            
+    async def on_error(self, error: Exception, interaction: discord.Interaction,
+                       item: discord.ui.Item[Any]):
+        await interaction.response.send_message(error, ephemeral=True)
+        await interaction.message.delete(delay=3)
+        return await super().on_error(error, item, interaction)
+    
+    async def on_timeout(self):
+        return await super().on_timeout()
+
+
+class ClanLeaderboardPVP(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=60)
+        pvp_leaderboards = {
+            'too': ClanLeaderboardPVPButton(label='Trials of Osiris', custom_id='cl_too',
+                                            style=discord.ButtonStyle.gray),
+            'ib': ClanLeaderboardPVPButton(label='Iron banner', custom_id='cl_ib',
+                                           style=discord.ButtonStyle.gray),
+            'qp': ClanLeaderboardPVPButton(label='Quickplay', custom_id='cl_qp',
+                                           style=discord.ButtonStyle.gray),
+            'comp': ClanLeaderboardPVPButton(label='Competitive', custom_id='cl_comp',
+                                             style=discord.ButtonStyle.gray)
+        }
+        
+        for pvp in pvp_leaderboards.keys():
+            self.add_item(pvp_leaderboards[pvp])
+    
+    async def on_error(self, error: Exception, interaction: discord.Interaction,
+                       item: discord.ui.Item[Any]):
+        await interaction.response.send_message(error, ephemeral=True)
+        await interaction.message.delete(delay=3)
+        return await super().on_error(error, item, interaction)
+    
+    async def on_timeout(self):
+        return await super().on_timeout()
+
+
+class ClanLeaderboardPVE(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=60)
+        pve_leaderboard = {
+            'strike': ClanLeaderboardPVEButton(label='Strikes', custom_id='cl_strike',
+                                               style=discord.ButtonStyle.gray),
+            'raid': ClanLeaderboardPVEButton(label='Raids', custom_id='cl_raid',
+                                             style=discord.ButtonStyle.gray),
+            'gambit': ClanLeaderboardPVEButton(label='Gambit', custom_id='cl_gambit',
+                                               style=discord.ButtonStyle.gray)
+        }
+        
+        for pve in pve_leaderboard.keys():
+            self.add_item(pve_leaderboard[pve])
+    
+    async def on_error(self, error: Exception, interaction: discord.Interaction,
+                       item: discord.ui.Item[Any]):
+        await interaction.response.send_message(error, ephemeral=True)
+        await interaction.message.delete(delay=3)
+        return await super().on_error(error, item, interaction)
+    
+    async def on_timeout(self):
+        return await super().on_timeout()
+
+
 class SelectCharacterView(discord.ui.View):
     def __init__(self, decoded_data, user_name):
-        super().__init__(timeout=3000)
+        super().__init__(timeout=60)
         characters = {
             'Titan': TitanButton(decoded_data, user_name),
             'Warlock': WarlockButton(decoded_data, user_name),
@@ -91,7 +207,7 @@ class SelectCharacterView(discord.ui.View):
 
     async def on_error(self, error: Exception, interaction: discord.Interaction,
                        item: discord.ui.Item[Any]):
-        await item.response.send_message("Could not fetch character equipment!",
+        await item.response.send_message("Could not fetch leaderboard type!",
                                          ephemeral=True)
         await item.message.delete(delay=3)
         return await super().on_error(error, item, interaction)
@@ -99,7 +215,7 @@ class SelectCharacterView(discord.ui.View):
     async def on_timeout(self):
         return await super().on_timeout()
     
-    
+  
 class CheckModal(discord.ui.Modal, title="Commander Zavala"):
     answer = discord.ui.TextInput(label='User name and code',
                                   style=discord.TextStyle.short, required=True,
@@ -143,3 +259,8 @@ class CheckModal(discord.ui.Modal, title="Commander Zavala"):
         #embed.set_author(name=self.answer, icon_url=user_icon)
         await interaction.followup.send(embed=embed, view=class_view)
         self.stop()
+        
+        
+
+
+
