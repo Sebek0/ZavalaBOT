@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from requests import delete
 
 from bungie_api_wrapper.manifest import Manifest
-from bungie_api_wrapper.async_main import get_characters, get_clan_informations, get_clan_members
+from bungie_api_wrapper.async_main import get_characters, get_clan_informations, get_clan_members, get_destiny_clan_weekly_rewards
 
 # Importing commands view
 from discord_bot.bot_ui import *
@@ -89,6 +89,7 @@ class ClanCog(commands.GroupCog, name='clan'):
         if group_id is None:
             group_id = os.getenv('BUNGIE_GROUP_ID')
             clan_info = await get_clan_informations(group_id)
+            clan_rewards = await get_destiny_clan_weekly_rewards(group_id)
             clan_embed = BungieClanEmbed()
             clan_embed = await clan_embed.info_embed(
                 name=clan_info['name'],
@@ -104,7 +105,8 @@ class ClanCog(commands.GroupCog, name='clan'):
                 creation_date=clan_info['creation_date'],
                 exp=clan_info['exp'],
                 level=clan_info['level'],
-                interaction=interaction
+                interaction=interaction,
+                rewards=clan_rewards
             )
             await interaction.followup.send(embed=clan_embed, view=delete_view)
             logger.info(f'{interaction.user.display_name} used clan info command.')

@@ -212,7 +212,8 @@ class BungieClanEmbed(discord.Embed):
         
     async def info_embed(self, name, callsign, motto, about, author_icon_url,
                           clan_icon_url, founder_name, level_cap, interaction,
-                          members_list, members_count, creation_date, exp, level):
+                          members_list, members_count, creation_date, exp, level,
+                          rewards):
         
         members = ''
         for member in members_list:
@@ -221,6 +222,14 @@ class BungieClanEmbed(discord.Embed):
                 members += f'{member} - {user.mention} \n'
             else:
                 members += f'{member} \n'
+        
+        clan_rewards = ''
+        for key, value in rewards.items():
+            if value == True:
+                clan_rewards += f'{key}: ✅ \n'
+            else:
+                clan_rewards += f'{key}: ❌ \n'
+        
                                             
         embed = discord.Embed(title=f'{name} [{callsign}]', description=motto,
                               color=0xff1a1a, timestamp=datetime.now())
@@ -231,8 +240,9 @@ class BungieClanEmbed(discord.Embed):
         embed.add_field(name='Creation date', value=creation_date, inline=True)
         embed.add_field(name='Progression', value=f'Exp: {exp}/600000 \n' \
                         f'Level: {level}/{level_cap}', inline=False)
+        embed.add_field(name=f'Weekly engrams:', value=clan_rewards, inline=True)
         embed.add_field(name=f'Members [{members_count}]', value=members,
-                        inline=True)
+                        inline=False)
         embed.set_image(url='https://bungie.net/img/Themes/Group_Community1/struct_images/group_top_banner.jpg')
         embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
         

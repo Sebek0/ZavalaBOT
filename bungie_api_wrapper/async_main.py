@@ -193,6 +193,31 @@ async def get_clan_members(group_id):
     await destiny.close()
     return members_list
 
+async def get_destiny_clan_weekly_rewards(group_id):
+    destiny = BAPI(API_KEY)
+    clan_weekly_rewards = {}
+    
+    response = await destiny.api.get_clan_weekly_reward(group_id)
+    response = response['Response']['rewards'][0]['entries']
+    
+    try:
+        for rewards in response:
+            if rewards['rewardEntryHash'] == 3789021730:
+                clan_weekly_rewards['Nightfall Strikes'] = rewards['earned']
+            elif rewards['rewardEntryHash'] == 248695599:
+                clan_weekly_rewards['Gambit'] = rewards['earned']
+            elif rewards['rewardEntryHash'] == 2043403989:
+                clan_weekly_rewards['Raids'] = rewards['earned']
+            elif rewards['rewardEntryHash'] == 964120289:
+                clan_weekly_rewards['Rumble'] = rewards['earned']
+    except KeyError as key_error:
+        logger.error(key_error)
+    except ValueError as value_error:
+        logger.error(value_error)
+    
+    await destiny.close()
+    return clan_weekly_rewards
+
 
 async def main():
     pass

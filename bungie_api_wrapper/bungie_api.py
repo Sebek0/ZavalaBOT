@@ -332,6 +332,19 @@ class BungieAPI:
 
         return await self._get_request(url)
     
+    async def get_clan_weekly_reward(self, group_id):
+        """Get clan weekly rewards.
+        
+        Args:
+            group_id (int): Group's id.
+        
+        Returns:
+            _get_request (json): request Response."""
+        
+        url = DESTINY2_URL + 'Clan/{}/WeeklyRewardState/'
+        url = url.format(group_id)
+        
+        return await self._get_request(url)
     
         
         
