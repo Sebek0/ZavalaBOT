@@ -53,13 +53,13 @@ class GuardianCog(commands.GroupCog, name='guardian'):
                 else:
                     user_icon = user.default_avatar
                     
-            embed = discord.Embed()
+            embed = discord.Embed(description=username)
             
             for character, value in decoded_data.items():
                 in_game_time = int(value['minutesPlayedTotal']) / 60
                 last_time_login = value['dateLastPlayed'].replace("T", " ").replace("Z", "")
                 embed.add_field(
-                    name=f':lock: **{character}**',
+                    name=f'<:tricorn:983321900191219712> **{character}**',
                     value=f'Race: **{value["raceName"]}** \n \
                             Light: **{value["light"]}** \n \
                             Last login: **{last_time_login}** \n \
@@ -167,22 +167,24 @@ class UtilityCommands(commands.Cog):
     
     @app_commands.command(name='lfg', description='Event LFG command')
     async def lfg_event(self, interaction: discord.Interaction, description: str,
-                        slots: int, event_type: str = 'pve'):
-        event_type = event_type.lower()
+                        slots: int, role: discord.Role):
         embed = discord.Embed(description=description)
-        role = discord.utils.get(interaction.guild.roles, name=event_type)
         ping_str = f'{role.mention} +{slots}'
         
-        if event_type == 'pve':
-            await interaction.response.send_message(content=ping_str, embed=embed)
-            message = await interaction.original_message()
-            await message.add_reaction(':plus_one:')
-        elif event_type == 'pvp':
-            await interaction.response.send_message(content=ping_str, embed=embed)
-            message = await interaction.original_message()
-            await message.add_reaction(':plus_one:')
-            
-                         
+        await interaction.response.send_message(content=ping_str, embed=embed)
+        message = await interaction.original_message()
+        await message.add_reaction(':plus_one:')
+
+    @app_commands.command(name='id')
+    async def emoji_id(self, interaction: discord.Interaction):
+        emoji = discord.utils.get(interaction.guild.emojis, name='tricorn')
+        await interaction.response.send_message(content=emoji.id, ephemeral=True)
+        
+    
+    @app_commands.command(name='test')
+    async def test_command(self, interaction: discord.Interaction, role: discord.Role):
+        await asyncio.sleep(2)
+        await interaction.response.send_message(content=role.mentionable)
                     
 async def setup(bot: commands.Bot) -> None:
     commands_list = [ClanCog(bot), GuardianCog(bot), UtilityCommands(bot)] 
