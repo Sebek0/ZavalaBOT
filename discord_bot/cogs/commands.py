@@ -164,6 +164,25 @@ class UtilityCommands(commands.Cog):
         if timer <= 0:
             await message.delete()
             await interaction.channel.send(interaction.user.mention)
+    
+    @app_commands.command(name='lfg', description='Event LFG command')
+    async def lfg_event(self, interaction: discord.Interaction, description: str,
+                        slots: int, event_type: str = 'pve'):
+        event_type = event_type.lower()
+        embed = discord.Embed(description=description)
+        role = discord.utils.get(interaction.guild.roles, name=event_type)
+        ping_str = f'{role.mention} +{slots}'
+        
+        if event_type == 'pve':
+            await interaction.response.send_message(content=ping_str, embed=embed)
+            message = await interaction.original_message()
+            await message.add_reaction(':plus_one:')
+        elif event_type == 'pvp':
+            await interaction.response.send_message(content=ping_str, embed=embed)
+            message = await interaction.original_message()
+            await message.add_reaction(':plus_one:')
+            
+                         
                     
 async def setup(bot: commands.Bot) -> None:
     commands_list = [ClanCog(bot), GuardianCog(bot), UtilityCommands(bot)] 
