@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 from bungie_api_wrapper import BAPI
 from custom_logging import CustomFormatter
+from bungie_api_wrapper.manifest import Manifest
 
 load_dotenv()
 
@@ -183,8 +184,6 @@ async def get_clan_members(group_id):
                     pass
                 else:
                     member = f'{name}#{code}'
-                    #memberencode = member.encode('ASCII', 'ignore')
-                    #memberdecode = memberencode.decode()
                     members_list.append(member)   
             except KeyError as k_error:
                 logger.error(k_error)
@@ -219,9 +218,61 @@ async def get_destiny_clan_weekly_rewards(group_id):
     await destiny.close()
     return clan_weekly_rewards
 
+async def get_character_history(platform, destiny_membership_id, character_id,
+                                count=10, mode=None, page=0):
+    destiny = BAPI(API_KEY)
+    manifest = Manifest()
+    
+    character_history = destiny.api.get_activity_history(platform, destiny_membership_id,
+                                                         character_id, count, mode, page)
+    
+    
+
+async def get_character_history_test(name, code, platform, count=1, mode=None, page=0):
+    destiny = BAPI(API_KEY)
+    manifest = Manifest()
+    
+    destiny_membership_id = await destiny.api.post_search_destiny_player(
+        platform, {'displayName': name, 'displayNameCode': code}
+    )
+    destiny_membership_id = destiny_membership_id['Response'][0]['membershipId']
+    
+    profile = await destiny.api.get_destiny_profile(destiny_membership_id, 3, [200])
+    profile = profile['Response']['characters']['data']
+    
+    characters = {}
+    try:
+        for character_id, character_data in profile.items():
+            characters[character_id] = character_data['classHash']
+    except Exception as error:
+        print(error)
+        
+    characters_history = {}
+    
+    try:
+        for character_id, character_hash in characters.items():
+            activities = {}
+            class_name = manifest.decode_character_class(character_hash)
+            char_history = await destiny.api.get_activity_history(platform, destiny_membership_id,
+                                                                character_id, count, mode, page)
+            for activ in char_history['Response']['activities']:
+                activity = manifest.decode_activity_name(activ['activityDetails']['directorActivityHash'])
+                activities[activity] = {
+                    'period': activ['period'],
+                    'modes': activ['activityDetails']['modes'],
+                    'duration': activ['values']['activityDurationSeconds']['basic']['displayValue']
+                }
+                #print(activ['values'])
+            characters_history[class_name] = activities
+    except Exception as error:
+        print(error)
+    
+    await destiny.close()
+    print(characters_history)
 
 async def main():
     pass
     
 if __name__ == '__main__':
     asyncio.run(main())        
+    
