@@ -51,7 +51,7 @@ class WarlockButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         select_char_view = SelectCharacterView(self.decoded_data, self.user_name)
         warlock_embed = await self.warlock_embed.embed('Warlock', 0x008f11,
-                                                       self.user_name, 'https://bit.ly/3llqjRv')
+                                                       self.user_name, 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/b3e79364-9b2c-4b75-8a81-7b99a0eb3b05/dblevlj-08ca9cdd-7036-47ae-ac22-5be96691129e.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2IzZTc5MzY0LTliMmMtNGI3NS04YTgxLTdiOTlhMGViM2IwNVwvZGJsZXZsai0wOGNhOWNkZC03MDM2LTQ3YWUtYWMyMi01YmU5NjY5MTEyOWUuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.YrfDlGCFex9PB5fra4EGrp1I8LSvODkMvVHGW0WqqaM')
         await interaction.response.edit_message(embed=warlock_embed, view=select_char_view)
         logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
         
@@ -223,12 +223,12 @@ class SelectCharacterView(discord.ui.View):
             if character in characters.keys():
                 self.add_item(characters[character])
 
-    async def on_error(self, error: Exception, interaction: discord.Interaction,
-                       item: discord.ui.Item[Any]):
-        await item.response.send_message("Could not fetch leaderboard type!",
+    async def on_error(self, interaction: discord.Interaction, error: Exception,
+                       item: discord.ui.Item[Any]) -> None:
+        logger.error(f'{interaction} - {error} - {item}')
+        await interaction.response.send_message("Could not fetch character equipment!",
                                          ephemeral=True)
-        await item.message.delete(delay=3)
-        return await super().on_error(error, item, interaction)
+        return await super().on_error(interaction, error, item)
     
     async def on_timeout(self):
         return await super().on_timeout()
