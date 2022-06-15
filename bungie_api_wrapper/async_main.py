@@ -100,7 +100,8 @@ async def get_characters(name, code, platform):
                     items[b_hash] = item_raw_data
             except KeyError as k_error:
                 logger.error(f'{k_error} Bucket: {item[i]["bucketHash"]} \
-                      Item: {item[i]["itemHash"]} Class: {char_data["classHash"]}')
+                      Item: {item[i]["itemHash"]} Class: {char_data["classHash"]} \
+                          ItemInstanceId: {item[i]["itemInstanceId"]}')
                 
         characters_informations[char_data['classHash']] = {
             'dateLastPlayed': char_data['dateLastPlayed'],
