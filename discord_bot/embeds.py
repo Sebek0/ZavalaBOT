@@ -3,7 +3,9 @@ import discord
 
 from datetime import datetime
 from discord.ext import commands
+import logging
 
+logger = logging.getLogger('discord_bot')
 
 class ClassEmbed(discord.Embed):
     def __init__(self, decoded_data):
@@ -37,12 +39,16 @@ class ClassEmbed(discord.Embed):
         energy_perks = ''
         power_perks = ''
         
-        for v in d['items']['Kinetic Weapons']['perks'].values():
-            kinetic_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Energy Weapons']['perks'].values():
-            energy_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Power Weapons']['perks'].values():
-            power_perks += f'• __{v["name"]} __\n'
+        try:
+            for v in d['items']['Kinetic Weapons']['perks'].values():
+                kinetic_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Energy Weapons']['perks'].values():
+                energy_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Power Weapons']['perks'].values():
+                power_perks += f'• __{v["name"]} __\n'
+        except KeyError as key_error:
+            logger.error(f'KeyError: {key_error} in weapons values {v["name"]}')
+            
             
         class_embed.add_field(
             name='Items:',
@@ -62,16 +68,19 @@ class ClassEmbed(discord.Embed):
         legs_perks = ''
         class_item_perks = ''
         
-        for v in d['items']['Helmet']['perks'].values():
-            helmet_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Gauntlets']['perks'].values():
-            gauntlets_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Chest Armor']['perks'].values():
-            armor_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Leg Armor']['perks'].values():
-            legs_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Class Armor']['perks'].values():
-            class_item_perks += f'• __{v["name"]} __\n'
+        try:
+            for v in d['items']['Helmet']['perks'].values():
+                helmet_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Gauntlets']['perks'].values():
+                gauntlets_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Chest Armor']['perks'].values():
+                armor_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Leg Armor']['perks'].values():
+                legs_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Class Armor']['perks'].values():
+                class_item_perks += f'• __{v["name"]} __\n'
+        except KeyError as key_error:
+            logger.error(f'KeyError: {key_error} in armor values {v["name"]}')
             
         class_embed.add_field(
             name='Armors:',
@@ -88,7 +97,7 @@ class ClassEmbed(discord.Embed):
                         class_item_perks),
             inline=True
         )
-        class_embed.set_thumbnail(url=f'https://www.bungie.net{d["emblemPath"]}')
+        class_embed.set_thumbnail(url=f'https://www.bungie.net/{d["emblemPath"]}')
         class_embed.set_author(name=user_name, icon_url=class_icon)
         class_embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
         return class_embed
