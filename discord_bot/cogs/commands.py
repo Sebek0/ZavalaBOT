@@ -7,10 +7,9 @@ import os
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
-from requests import delete
 
 from bungie_api_wrapper.manifest import Manifest
-from bungie_api_wrapper.async_main import get_characters, get_clan_informations, get_clan_members, get_destiny_clan_weekly_rewards
+from bungie_api_wrapper.async_main import get_characters, get_clan_informations, get_destiny_clan_weekly_rewards
 
 # Importing commands view
 from discord_bot.bot_ui import *
@@ -45,21 +44,27 @@ class GuardianCog(commands.GroupCog, name='guardian'):
             class_view = SelectCharacterView(decoded_data, str(username)) 
             
             # check if user is in clan server then fetch his avatar url
-            checked_user = discord.utils.get(interaction.guild.members, display_name=username)
+            checked_user = discord.utils.get(interaction.guild.members,
+                                             display_name=username)
             if checked_user:
                 user = interaction.guild.get_member(checked_user.id)
                 if user.display_avatar:
                     user_icon = user.display_avatar
                 else:
                     user_icon = user.default_avatar
-                    
-            embed = discord.Embed(description=username)
             
+            discord_user = discord.utils.get(interaction.guild.members,
+                                             display_name=username)
+            if discord_user is not None:
+                embed = discord.Embed(description=f'{discord_user.mention}')
+            else:
+                embed = discord.Embed(description=f'{username}')
+                
             for character, value in decoded_data.items():
                 in_game_time = int(value['minutesPlayedTotal']) / 60
                 last_time_login = value['dateLastPlayed'].replace("T", " ").replace("Z", "")
                 embed.add_field(
-                    name=f'<:tricorn:983321900191219712> **{character}**',
+                    name=f'<:tricorn:983458457069969429> **{character}**',
                     value=f'Race: **{value["raceName"]}** \n \
                             Light: **{value["light"]}** \n \
                             Last login: **{last_time_login}** \n \
@@ -165,28 +170,8 @@ class UtilityCommands(commands.Cog):
             await message.delete()
             await interaction.channel.send(interaction.user.mention)
     
-    @app_commands.command(name='lfg', description='Event LFG command')
-    async def lfg_event(self, interaction: discord.Interaction, description: str,
-                        slots: int, role: discord.Role):
-        embed = discord.Embed(description=description)
-        ping_str = f'{role.mention} +{slots}'
-        
-        await interaction.response.send_message(content=ping_str, embed=embed)
-        message = await interaction.original_message()
-        await message.add_reaction(':plus_one:')
-
-    @app_commands.command(name='id')
-    async def emoji_id(self, interaction: discord.Interaction):
-        emoji = discord.utils.get(interaction.guild.emojis, name='tricorn')
-        await interaction.response.send_message(content=emoji.id, ephemeral=True)
-        
-    
-    @app_commands.command(name='test')
-    async def test_command(self, interaction: discord.Interaction, role: discord.Role):
-        await asyncio.sleep(2)
-        await interaction.response.send_message(content=role.mentionable)
                     
 async def setup(bot: commands.Bot) -> None:
     commands_list = [ClanCog(bot), GuardianCog(bot), UtilityCommands(bot)] 
     for command in commands_list:
-        await bot.add_cog(command, guild=discord.Object(id=760629187932454935))
+        await bot.add_cog(command, guild=discord.Object(id=585134417568202836))
