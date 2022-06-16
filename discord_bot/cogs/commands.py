@@ -9,7 +9,8 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from bungie_api_wrapper.manifest import Manifest
-from bungie_api_wrapper.async_main import get_characters, get_clan_informations, get_destiny_clan_weekly_rewards
+from bungie_api_wrapper.async_main import *
+
 
 # Importing commands view
 from discord_bot.bot_ui import *
@@ -40,8 +41,9 @@ class GuardianCog(commands.GroupCog, name='guardian'):
             man = Manifest()
             
             characters_data = await get_characters(name, code, 3)
+            characters_history = await get_character_history_test(name, code, 3)
             decoded_data = man.decode_characters_from_manifest(characters_data)
-            class_view = SelectCharacterView(decoded_data, str(username)) 
+            class_view = SelectCharacterView(decoded_data, str(username))
             
             # check if user is in clan server then fetch his avatar url
             checked_user = discord.utils.get(interaction.guild.members,
@@ -71,7 +73,7 @@ class GuardianCog(commands.GroupCog, name='guardian'):
                             In-game time: **{int(in_game_time)} hours**'
                 )
 
-            #embed.set_author(name=username, icon_url=user_icon)
+            embed.set_author(name=username, icon_url=user_icon)
             await interaction.followup.send(embed=embed, view=class_view)
             logger.info(f'{interaction.user.display_name} used guardian check command.')
         
