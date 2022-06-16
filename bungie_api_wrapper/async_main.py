@@ -262,13 +262,12 @@ async def get_character_history_test(name, code, platform, count=1, mode=None, p
                     'modes': activ['activityDetails']['modes'],
                     'duration': activ['values']['activityDurationSeconds']['basic']['displayValue']
                 }
-                #print(activ['values'])
             characters_history[class_name] = activities
     except Exception as error:
         print(error)
     
     await destiny.close()
-    print(characters_history)
+    return characters_history
 
 async def main():
     pass
