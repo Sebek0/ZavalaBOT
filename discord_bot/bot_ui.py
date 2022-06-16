@@ -24,6 +24,7 @@ class DeleteMessageView(discord.ui.View):
         await interaction.message.delete()
         logger.info(f'{interaction.user.display_name} deleted {interaction.message.content}')
  
+ 
 class DeleteButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -35,6 +36,19 @@ class DeleteButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         await interaction.message.delete()
         logger.info(f'{interaction.user.display_name} deleted {interaction.message.content}')
+
+
+class ActivityHistoryButton(discord.ui.Button):
+    def __init__(self, character_history):
+        super().__init__(
+            label='History',
+            custom_id='activity_history',
+            style=discord.ButtonStyle.gray
+        )
+        
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.edit_message(content='dziala')
+        
         
 class WarlockButton(discord.ui.Button):
     def __init__(self, decoded_data, user_name):
@@ -90,6 +104,7 @@ class HunterButton(discord.ui.Button):
         
     async def callback(self, interaction: discord.Interaction):
         select_char_view = SelectCharacterView(self.decoded_data, self.user_name)
+        select_char_view.add_item(ActivityHistoryButton(self.user_name))
         hunter_embed = await self.hunter_embed.embed('Hunter', 0x0d0490,
                                                      self.user_name, 'https://bit.ly/3llqjRv')
         await interaction.response.edit_message(embed=hunter_embed, view=select_char_view)
