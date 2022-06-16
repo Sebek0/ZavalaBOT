@@ -101,6 +101,21 @@ class ClassEmbed(discord.Embed):
         class_embed.set_author(name=user_name, icon_url=class_icon)
         class_embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
         return class_embed
+    
+    async def history_embed(self, character_history, character_class_name, color):
+        history_embed = discord.Embed(
+            color=color,
+            title=f'{character_class_name} activity history.',
+            type='rich',
+            timestamp=datetime.now(),
+        )
+        pve_history = ''
+        pvp_history = ''
+        raid_history = ''
+        
+        try:
+            for value in character_history.values():
+                if value
 
 
 class MessageLogEmbed(discord.Embed):
