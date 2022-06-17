@@ -39,11 +39,29 @@ class GuardianCog(commands.GroupCog, name='guardian'):
             name = username.split('#')[0]
             code = int(username.split('#')[1])
             man = Manifest()
+                      
+            self.characters_data = {}
+            self.characters_history = {}
             
-            characters_data = await get_characters(name, code, 3)
-            characters_history = await get_character_history_test(name, code, 3)
-            decoded_data = man.decode_characters_from_manifest(characters_data)
-            class_view = SelectCharacterView(decoded_data, str(username))
+            # this thing makes it possible to gather multiple request in the same
+            # time, doing that makes overall time for command to execute is halfed.
+            async def fetch_characters(self):
+                self.characters_data = await get_characters(name, code, 3)
+            async def fetch_history(self):
+                self.characters_history = await get_character_history_test(name, code, 3)
+                
+            await asyncio.gather(
+                fetch_characters(self),
+                fetch_history(self)
+            )
+            
+            # old way to make requests, it works but very slowly.
+            
+            #characters_data = await get_characters(name, code, 3)
+            #characters_history = await get_character_history_test(name, code, 3)
+            
+            decoded_data = man.decode_characters_from_manifest(self.characters_data)
+            class_view = SelectCharacterView(decoded_data, str(username), self.characters_history)
             
             # check if user is in clan server then fetch his avatar url
             checked_user = discord.utils.get(interaction.guild.members,
