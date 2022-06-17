@@ -39,15 +39,24 @@ class DeleteButton(discord.ui.Button):
 
 
 class ActivityHistoryButton(discord.ui.Button):
-    def __init__(self, character_history):
+    def __init__(self, decoded_data, user_name, history):
         super().__init__(
             label='History',
             custom_id='activity_history',
             style=discord.ButtonStyle.gray
         )
-        
+        self.user_name = user_name
+        self.decoded_data = decoded_data
+        self.user_name = user_name
+        self.history = history
+        self.embed = ClassEmbed(self.decoded_data)
+    
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.edit_message(content='dziala')
+        select_char_view = SelectCharacterView(self.decoded_data, self.user_name, self.history)
+        history_embed = await self.embed.history_embed(self.history)
+        await interaction.response.edit_message(embed=history_embed, view=select_char_view)
+        logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
+    
         
         
 class WarlockButton(discord.ui.Button):
@@ -91,7 +100,7 @@ class TitanButton(discord.ui.Button):
 
 
 class HunterButton(discord.ui.Button):
-    def __init__(self, decoded_data, user_name):
+    def __init__(self, decoded_data, user_name, history):
         super().__init__(
             label='Hunter',
             custom_id='hunter',
@@ -101,10 +110,11 @@ class HunterButton(discord.ui.Button):
         self.user_name = user_name
         self.decoded_data = decoded_data
         self.user_name = user_name
+        self.history = history
         
     async def callback(self, interaction: discord.Interaction):
-        select_char_view = SelectCharacterView(self.decoded_data, self.user_name)
-        select_char_view.add_item(ActivityHistoryButton(self.user_name))
+        select_char_view = SelectCharacterView(self.decoded_data, self.user_name, self.history)
+        select_char_view.add_item(ActivityHistoryButton(self.decoded_data, self.user_name, self.history))
         hunter_embed = await self.hunter_embed.embed('Hunter', 0x0d0490,
                                                      self.user_name, 'https://bit.ly/3llqjRv')
         await interaction.response.edit_message(embed=hunter_embed, view=select_char_view)
@@ -225,12 +235,12 @@ class ClanLeaderboardPVE(discord.ui.View):
 
 
 class SelectCharacterView(discord.ui.View):
-    def __init__(self, decoded_data, user_name):
+    def __init__(self, decoded_data, user_name, history):
         super().__init__(timeout=60)
         characters = {
             'Titan': TitanButton(decoded_data, user_name),
             'Warlock': WarlockButton(decoded_data, user_name),
-            'Hunter': HunterButton(decoded_data, user_name)
+            'Hunter': HunterButton(decoded_data, user_name, history)
         }
 
         self.add_item(DeleteButton())
