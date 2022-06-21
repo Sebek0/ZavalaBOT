@@ -1,8 +1,6 @@
-from unicodedata import name
 import discord
 
 from datetime import datetime
-from discord.ext import commands
 import logging
 
 logger = logging.getLogger('discord_bot')
@@ -102,18 +100,30 @@ class ClassEmbed(discord.Embed):
         class_embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
         return class_embed
     
-    async def history_embed(self, character_history):
+    async def history_embed(self, character_history, character):
         history_embed = discord.Embed(
-            title='activity history.',
+            title=f'{character} activity history',
+            description='Last activities sorted by type',
             type='rich',
             timestamp=datetime.now(),
         )
-        pve_history = ''
-        pvp_history = ''
-        raid_history = ''
+        pve_history = ' '
+        pvp_history = ' '
         
-        
-        history_embed.add_field(name='PvE', value=character_history)
+
+        for key, value in character_history.items():
+            if 7 in value['modes']:
+                pve_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
+            elif 5 in value['modes']:
+                pvp_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
+         
+        if not pve_history.isspace():
+            history_embed.add_field(name='PvE [Activity] - [Period] - [Duration]',
+                                    value=pve_history, inline=False)
+        if not pvp_history.isspace():
+            history_embed.add_field(name='PvP [Activity] - [Period] - [Duration]',
+                                    value=pvp_history, inline=False)
+            
         return history_embed
 
 
