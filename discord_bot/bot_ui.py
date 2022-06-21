@@ -39,28 +39,30 @@ class DeleteButton(discord.ui.Button):
 
 
 class ActivityHistoryButton(discord.ui.Button):
-    def __init__(self, decoded_data, user_name, history):
+    def __init__(self, decoded_data, user_name, history, character):
         super().__init__(
             label='History',
             custom_id='activity_history',
             style=discord.ButtonStyle.gray
         )
+        self.embed = ClassEmbed(decoded_data)
         self.user_name = user_name
         self.decoded_data = decoded_data
         self.user_name = user_name
         self.history = history
-        self.embed = ClassEmbed(self.decoded_data)
-    
+        self.character = character
+        self.character_history = history[character]
+        
     async def callback(self, interaction: discord.Interaction):
         select_char_view = SelectCharacterView(self.decoded_data, self.user_name, self.history)
-        history_embed = await self.embed.history_embed(self.history)
+        history_embed = await self.embed.history_embed(self.character_history, self.character)
         await interaction.response.edit_message(embed=history_embed, view=select_char_view)
         logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
     
         
         
 class WarlockButton(discord.ui.Button):
-    def __init__(self, decoded_data, user_name):
+    def __init__(self, decoded_data, user_name, history):
         super().__init__(
             label='Warlock',
             custom_id='warlock',
@@ -70,17 +72,21 @@ class WarlockButton(discord.ui.Button):
         self.user_name = user_name
         self.decoded_data = decoded_data
         self.user_name = user_name
+        self.history = history
         
     async def callback(self, interaction: discord.Interaction):
-        select_char_view = SelectCharacterView(self.decoded_data, self.user_name)
-        warlock_embed = await self.warlock_embed.embed('Warlock', 0x008f11,
-                                                       self.user_name, 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/b3e79364-9b2c-4b75-8a81-7b99a0eb3b05/dblevlj-08ca9cdd-7036-47ae-ac22-5be96691129e.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2IzZTc5MzY0LTliMmMtNGI3NS04YTgxLTdiOTlhMGViM2IwNVwvZGJsZXZsai0wOGNhOWNkZC03MDM2LTQ3YWUtYWMyMi01YmU5NjY5MTEyOWUuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.YrfDlGCFex9PB5fra4EGrp1I8LSvODkMvVHGW0WqqaM')
+        select_char_view = SelectCharacterView(self.decoded_data, self.user_name,
+                                               self.history)
+        select_char_view.add_item(ActivityHistoryButton(self.decoded_data, self.user_name,
+                                                        self.history, 'Warlock'))
+        warlock_embed = await self.warlock_embed.embed('Warlock', 0x008f11, self.user_name,
+                                                       'https://bit.ly/3llqjRv')
         await interaction.response.edit_message(embed=warlock_embed, view=select_char_view)
         logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
         
 
 class TitanButton(discord.ui.Button):
-    def __init__(self, decoded_data, user_name):
+    def __init__(self, decoded_data, user_name, history):
         super().__init__(
             label='Titan',
             custom_id='titan',
@@ -90,11 +96,15 @@ class TitanButton(discord.ui.Button):
         self.user_name = user_name
         self.decoded_data = decoded_data
         self.user_name = user_name
+        self.history = history
     
     async def callback(self, interaction: discord.Interaction):
-        select_char_view = SelectCharacterView(self.decoded_data, self.user_name)
-        titan_embed = await self.titan_embed.embed('Titan', 0xc80404,
-                                                   self.user_name, 'https://bit.ly/3llqjRv')
+        select_char_view = SelectCharacterView(self.decoded_data, self.user_name,
+                                               self.history)
+        select_char_view.add_item(ActivityHistoryButton(self.decoded_data, self.user_name,
+                                                        self.history, 'Titan'))
+        titan_embed = await self.titan_embed.embed('Titan', 0xc80404, self.user_name,
+                                                   'https://bit.ly/3llqjRv')
         await interaction.response.edit_message(embed=titan_embed, view=select_char_view)
         logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
 
@@ -113,10 +123,12 @@ class HunterButton(discord.ui.Button):
         self.history = history
         
     async def callback(self, interaction: discord.Interaction):
-        select_char_view = SelectCharacterView(self.decoded_data, self.user_name, self.history)
-        select_char_view.add_item(ActivityHistoryButton(self.decoded_data, self.user_name, self.history))
-        hunter_embed = await self.hunter_embed.embed('Hunter', 0x0d0490,
-                                                     self.user_name, 'https://bit.ly/3llqjRv')
+        select_char_view = SelectCharacterView(self.decoded_data, self.user_name,
+                                               self.history)
+        select_char_view.add_item(ActivityHistoryButton(self.decoded_data, self.user_name,
+                                                        self.history, 'Hunter'))
+        hunter_embed = await self.hunter_embed.embed('Hunter', 0x0d0490, self.user_name,
+                                                     'https://bit.ly/3llqjRv')
         await interaction.response.edit_message(embed=hunter_embed, view=select_char_view)
         logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
 
@@ -236,10 +248,10 @@ class ClanLeaderboardPVE(discord.ui.View):
 
 class SelectCharacterView(discord.ui.View):
     def __init__(self, decoded_data, user_name, history):
-        super().__init__(timeout=60)
+        super().__init__(timeout=600)
         characters = {
-            'Titan': TitanButton(decoded_data, user_name),
-            'Warlock': WarlockButton(decoded_data, user_name),
+            'Titan': TitanButton(decoded_data, user_name, history),
+            'Warlock': WarlockButton(decoded_data, user_name, history),
             'Hunter': HunterButton(decoded_data, user_name, history)
         }
 
