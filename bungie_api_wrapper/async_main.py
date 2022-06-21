@@ -3,6 +3,7 @@ import asyncio
 import json
 import time
 import logging
+import datetime
 
 from dotenv import load_dotenv
 
@@ -227,8 +228,7 @@ async def get_character_history(platform, destiny_membership_id, character_id,
                                                          character_id, count, mode, page)
     
     
-
-async def get_character_history_test(name, code, platform, count=1, mode=None, page=0):
+async def get_character_history_test(name, code, platform, count=5, mode=None, page=0):
     destiny = BAPI(API_KEY)
     manifest = Manifest()
     
@@ -257,8 +257,10 @@ async def get_character_history_test(name, code, platform, count=1, mode=None, p
                                                                 character_id, count, mode, page)
             for activ in char_history['Response']['activities']:
                 activity = manifest.decode_activity_name(activ['activityDetails']['directorActivityHash'])
-                activities[activity] = {
-                    'period': activ['period'],
+                activity_period = activ['period'].replace('T', ' ').replace('Z', '')
+                activity_date = datetime.datetime.strptime(activity_period, "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M")
+                activities[activity_date] = {
+                    'activity': activity,
                     'modes': activ['activityDetails']['modes'],
                     'duration': activ['values']['activityDurationSeconds']['basic']['displayValue']
                 }
