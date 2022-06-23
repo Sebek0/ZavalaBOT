@@ -228,7 +228,7 @@ async def get_character_history(platform, destiny_membership_id, character_id,
                                                          character_id, count, mode, page)
     
     
-async def get_character_history_test(name, code, platform, count=5, mode=None, page=0):
+async def get_character_history_test(name, code, platform, count=15, mode=None, page=0):
     destiny = BAPI(API_KEY)
     manifest = Manifest()
     
