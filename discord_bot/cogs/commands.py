@@ -35,6 +35,7 @@ class GuardianCog(commands.GroupCog, name='guardian'):
             logger.info(f'{interaction.user.display_name} used modal guardian check command.')
         else:
             await interaction.response.defer()
+            command_author_id = interaction.user.id
             username = str(username)
             name = username.split('#')[0]
             code = int(username.split('#')[1])
@@ -61,7 +62,8 @@ class GuardianCog(commands.GroupCog, name='guardian'):
             #characters_history = await get_character_history_test(name, code, 3)
             
             decoded_data = man.decode_characters_from_manifest(self.characters_data)
-            class_view = SelectCharacterView(decoded_data, str(username), self.characters_history)
+            class_view = SelectCharacterView(decoded_data, str(username),
+                                             self.characters_history, command_author_id)
             
             # check if user is in clan server then fetch his avatar url
             checked_user = discord.utils.get(interaction.guild.members,
