@@ -39,7 +39,7 @@ class DeleteButton(discord.ui.Button):
             await interaction.message.delete()
             logger.info(f'{interaction.user.display_name} deleted {interaction.message.content}')
         else:
-            await interaction.response.send_message(content="No no starego sobie usun!", ephemeral=True)
+            await interaction.response.send_message(content="You can't use this!", ephemeral=True)
 
 
 class ActivityHistoryButton(discord.ui.Button):
@@ -63,7 +63,8 @@ class ActivityHistoryButton(discord.ui.Button):
         if interaction.user.id == self.command_author_id:
             select_char_view = SelectCharacterView(self.decoded_data, self.user_name, self.history,
                                                    self.command_author_id)
-            history_embed = await self.embed.history_embed(self.character_history, self.character)
+            history_embed = await self.embed.history_embed(self.character_history, self.character,
+                                                           self.user_name)
             await interaction.response.edit_message(embed=history_embed, view=select_char_view)
             logger.info(f'{interaction.user.display_name} interacted with {self.label}.')
     
