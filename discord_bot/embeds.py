@@ -100,7 +100,7 @@ class ClassEmbed(discord.Embed):
         class_embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
         return class_embed
     
-    async def history_embed(self, character_history, character):
+    async def history_embed(self, character_history, character, user_name):
         history_embed = discord.Embed(
             title=f'{character} activity history',
             description='Last activities sorted by type',
@@ -109,10 +109,25 @@ class ClassEmbed(discord.Embed):
         )
         pve_history = ' '
         pvp_history = ' '
+        gambit_history = ' '
+        too_history = ' '
+        strike_history = ' '
+        raid_history = ' '
         
-
         for key, value in character_history.items():
-            if 7 in value['modes']:
+            if 63 in value['modes']:
+                gambit_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
+                continue
+            elif 84 in value['modes']:
+                too_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
+                continue
+            elif 3 in value['modes']:
+                strike_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
+                continue
+            elif 4 in value['modes']:
+                raid_history += f'{value["activity"]} - {key} - {value["duration"]} \n'     
+                continue     
+            elif 7 in value['modes']:
                 pve_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
             elif 5 in value['modes']:
                 pvp_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
@@ -123,7 +138,22 @@ class ClassEmbed(discord.Embed):
         if not pvp_history.isspace():
             history_embed.add_field(name='PvP [Activity] - [Period] - [Duration]',
                                     value=pvp_history, inline=False)
-            
+        if not gambit_history.isspace():
+            history_embed.add_field(name='Gambit [Activity] - [Period] - [Duration]',
+                                    value=gambit_history, inline=False)           
+        if not too_history.isspace():
+            history_embed.add_field(name='ToO [Activity] - [Period] - [Duration]',
+                                    value=too_history, inline=False)
+        if not strike_history.isspace():
+            history_embed.add_field(name='Strike [Activity] - [Period] - [Duration]',
+                                    value=strike_history, inline=False)
+        if not raid_history.isspace():
+            history_embed.add_field(name='Raid [Activity] - [Period] - [Duration]',
+                                    value=raid_history, inline=False)
+        
+        history_embed.set_author(name=user_name)
+        history_embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
+        
         return history_embed
 
 
