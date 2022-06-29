@@ -192,6 +192,15 @@ class UtilityCommands(commands.Cog):
             await message.delete()
             await interaction.channel.send(interaction.user.mention)
     
+    @app_commands.checks.has_role('Founding Fathers')
+    @app_commands.command(name='purge', description='Deletes the selected number of messages')
+    async def purge(self, interaction: discord.Interaction, amount: int = 5):
+        purge_ch = self.bot.get_channel(int(interaction.channel.id))
+        await interaction.response.defer()
+        async for message in purge_ch.history(limit=amount):
+            await asyncio.sleep(1)
+            await message.delete()
+        await interaction.followup.send(f'Removed {amount} messages!', ephemeral=True)
                     
 async def setup(bot: commands.Bot) -> None:
     commands_list = [ClanCog(bot), GuardianCog(bot), UtilityCommands(bot)] 
