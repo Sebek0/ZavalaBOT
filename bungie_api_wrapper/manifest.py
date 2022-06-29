@@ -31,14 +31,14 @@ class Manifest:
                 version_data = json.load(v_file)
                 version = version_data['version']
             if version != str(manifest_data['Response']['version']):
-                print('Manifest version is outdated! Downloading new version...')
+                logger.info('Manifest version is outdated! Downloading new version...')
                 self.get_manifest_files()
                 if os.path.isfile(r'bungie_api_wrapper/Manifest/version.json'):
-                    print('Downloading complete, version is up to date.')
+                    logger.info('Downloading complete, version is up to date.')
                 else:
-                    print('Unexpected error while downloading new version!')
+                    logger.error('Unexpected error while downloading new version!')
             else:
-                print('Manifest version is up to date!')
+                logger.info('Manifest version is up to date!')
     
     def get_manifest_files(self):
         
