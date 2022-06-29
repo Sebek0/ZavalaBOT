@@ -6,6 +6,7 @@ import logging
 from discord.ext import commands
 from dotenv import load_dotenv
 from custom_logging import CustomFormatter
+from bungie_api_wrapper.manifest import Manifest
 
 load_dotenv()
 
@@ -23,11 +24,15 @@ logger.setLevel(logging.DEBUG)
 
 class Bot(commands.Bot):
     def __init__(self) -> None:
-        intents = discord.Intents.all()   
+        intents = discord.Intents.all()
+        self.development = True
+        if self.development != True:
+            self.manifest = Manifest()
         super().__init__(command_prefix='.', intents=intents)
     
     async def on_ready(self) -> None:
         logger.debug(f'About to start {self.user}...')
+        
         await self.wait_until_ready()
         try:
             await bot.tree.sync(guild=discord.Object(id=guild_id))
@@ -37,6 +42,10 @@ class Bot(commands.Bot):
         except discord.Forbidden:
             logger.error('The client does not have the applications.commands'
                               'scope in the guild.')
+        
+        # Checking if Bungie API manifest is up to date with bot startup.
+        if self.development != True:
+            self.manifest.check_manifest()
             
         logger.info(f'Bot logged in as {self.user}')
         logger.info(f'{self.user} is ready to use.')
