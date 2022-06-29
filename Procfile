@@ -1,0 +1,1 @@
+worker: python Zavala/bot.py
