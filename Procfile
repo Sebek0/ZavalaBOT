@@ -1,1 +1,1 @@
-worker: python Zavala/bot.py
+worker: python bot.py
