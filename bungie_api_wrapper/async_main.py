@@ -219,7 +219,7 @@ async def get_destiny_clan_weekly_rewards(group_id):
     await destiny.close()
     return clan_weekly_rewards
 
-async def get_character_history(platform, destiny_membership_id, character_id,
+async def get_character_history_test(platform, destiny_membership_id, character_id,
                                 count=10, mode=None, page=0):
     destiny = BAPI(API_KEY)
     manifest = Manifest()
@@ -228,7 +228,7 @@ async def get_character_history(platform, destiny_membership_id, character_id,
                                                          character_id, count, mode, page)
     
     
-async def get_character_history_test(name, code, platform, count=15, mode=None, page=0):
+async def get_character_history(name, code, platform, count=5, mode=None, page=0):
     destiny = BAPI(API_KEY)
     manifest = Manifest()
     
