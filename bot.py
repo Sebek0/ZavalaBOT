@@ -25,7 +25,7 @@ logger.setLevel(logging.DEBUG)
 class Bot(commands.Bot):
     def __init__(self) -> None:
         intents = discord.Intents.all()
-        self.development = True
+        self.development = False
         if self.development != True:
             self.manifest = Manifest()
         super().__init__(command_prefix='.', intents=intents)
