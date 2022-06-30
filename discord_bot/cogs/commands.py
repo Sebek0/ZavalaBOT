@@ -49,7 +49,7 @@ class GuardianCog(commands.GroupCog, name='guardian'):
             async def fetch_characters(self):
                 self.characters_data = await get_characters(name, code, 3)
             async def fetch_history(self):
-                self.characters_history = await get_character_history_test(name, code, 3)
+                self.characters_history = await get_character_history(name, code, 3)
                 
             await asyncio.gather(
                 fetch_characters(self),
