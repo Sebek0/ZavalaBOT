@@ -2,6 +2,9 @@ import urllib
 import aiohttp
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DESTINY2_URL = os.getenv('DESTINY2_URL')
 USER_URL = os.getenv('USER_URL')
@@ -35,7 +38,7 @@ class BungieAPI:
             async with self.session.get(encoded_url, headers=headers) as r:
                 json_response = await r.json()
         except aiohttp.ClientResponseError:
-            raise Exception('Could not connect to Bungie.net API')
+            raise Exception('Could not connect to Bungie API')
         
         return json_response
     
@@ -50,8 +53,8 @@ class BungieAPI:
             json: request Response.
         """
         
-        encoded_url = urllib.parse.quote(url, safe=':/?&=,.')
         headers = {'X-API-Key': str(self.api_key)}
+        encoded_url = urllib.parse.quote(url, safe=':/?&=,.')
         try:
             async with self.session.post(encoded_url, headers=headers, json=payload) as r:
                 json_response = await r.json()
@@ -294,7 +297,7 @@ class BungieAPI:
         return await self._get_request(url)
     
     async def get_clan_leaderboard(self, group_id, maxtop, modes, stat_id):
-        """Get clan leaderboard
+        """Get clan leaderboard.
         
         Args:
             group_id (int): Group ID of the clan.
@@ -311,6 +314,62 @@ class BungieAPI:
         url = DESTINY2_URL + 'Stats/Leaderboards/Clans/{}/?maxtop={}&modes={}' \
             '&statid={}'
         url = url.format(group_id, maxtop, modes, stat_id)
+        
+        return await self._get_request(url)
+    
+    async def get_clan(self, group_id):
+        """Get clan data.
+        
+        Args:
+            group_id (int): Group's id.
+        
+        Returns:
+            _get_request (json): request Response.
+        """
+        
+        url = GROUP_URL + '{}/'
+        url = url.format(group_id)
+
+        return await self._get_request(url)
+    
+    async def get_clan_weekly_reward(self, group_id):
+        """Get clan weekly rewards.
+        
+        Args:
+            group_id (int): Group's id.
+        
+        Returns:
+            _get_request (json): request Response.
+        """
+        
+        url = DESTINY2_URL + 'Clan/{}/WeeklyRewardState/'
+        url = url.format(group_id)
+        
+        return await self._get_request(url)
+    
+    async def get_activity_history(self, platform, destiny_membership_id,
+                                   character_id, count, mode, page):
+        """Get activity history for one character.
+        
+        Args:
+            platform (int): Destiny2 membershipType.
+            destiny_membership_id (int): Destiny membershipId.
+            character_id (int): Destiny characterId.
+            count (int): Number of rows to return.
+            mode (int): A filter for the activity mode to be returned.
+                None returns all activities. See the documentation for
+                DestinyActivityModeType for valid values, and pass in string
+                representation.
+            page (int): Page number to return, starting with 0.
+            
+        Returns:
+            _get_request (json): request Response.
+        """
+
+        url = DESTINY2_URL + '{}/Account/{}/Character/{}/Stats/Activities/' \
+            '?count={}&mode={}&page={}'
+        url = url.format(platform, destiny_membership_id, character_id, count,
+                         mode, page)
         
         return await self._get_request(url)
     

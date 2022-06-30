@@ -6,6 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 from discord_bot.embeds import MessageLogEmbed, ChannelLogEmbed
+from discord_bot.helper_functions import purge_checkpoint_channel
 
 load_dotenv()
 logger = logging.getLogger('discord_bot')
@@ -25,6 +26,9 @@ class Listeners(commands.Cog):
             log_channel = self.bot.get_channel(self.log_channel_id)
             await log_channel.send(embed=log_message)
             logger.info(f'{message.author} sent message in {message.channel.name}.')
+            
+        if message.channel.id == int(os.getenv('CHECKPOINTS_CHANNEL_ID')):
+            await purge_checkpoint_channel(self.bot)
     
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):

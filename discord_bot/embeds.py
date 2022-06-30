@@ -1,8 +1,9 @@
 import discord
 
 from datetime import datetime
-from discord.ext import commands
+import logging
 
+logger = logging.getLogger('discord_bot')
 
 class ClassEmbed(discord.Embed):
     def __init__(self, decoded_data):
@@ -36,12 +37,16 @@ class ClassEmbed(discord.Embed):
         energy_perks = ''
         power_perks = ''
         
-        for v in d['items']['Kinetic Weapons']['perks'].values():
-            kinetic_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Energy Weapons']['perks'].values():
-            energy_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Power Weapons']['perks'].values():
-            power_perks += f'• __{v["name"]} __\n'
+        try:
+            for v in d['items']['Kinetic Weapons']['perks'].values():
+                kinetic_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Energy Weapons']['perks'].values():
+                energy_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Power Weapons']['perks'].values():
+                power_perks += f'• __{v["name"]} __\n'
+        except KeyError as key_error:
+            logger.error(f'KeyError: {key_error} in weapons values {v["name"]}')
+            
             
         class_embed.add_field(
             name='Items:',
@@ -61,16 +66,19 @@ class ClassEmbed(discord.Embed):
         legs_perks = ''
         class_item_perks = ''
         
-        for v in d['items']['Helmet']['perks'].values():
-            helmet_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Gauntlets']['perks'].values():
-            gauntlets_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Chest Armor']['perks'].values():
-            armor_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Leg Armor']['perks'].values():
-            legs_perks += f'• __{v["name"]} __\n'
-        for v in d['items']['Class Armor']['perks'].values():
-            class_item_perks += f'• __{v["name"]} __\n'
+        try:
+            for v in d['items']['Helmet']['perks'].values():
+                helmet_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Gauntlets']['perks'].values():
+                gauntlets_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Chest Armor']['perks'].values():
+                armor_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Leg Armor']['perks'].values():
+                legs_perks += f'• __{v["name"]} __\n'
+            for v in d['items']['Class Armor']['perks'].values():
+                class_item_perks += f'• __{v["name"]} __\n'
+        except KeyError as key_error:
+            logger.error(f'KeyError: {key_error} in armor values {v["name"]}')
             
         class_embed.add_field(
             name='Armors:',
@@ -87,10 +95,66 @@ class ClassEmbed(discord.Embed):
                         class_item_perks),
             inline=True
         )
-        class_embed.set_thumbnail(url=f'https://www.bungie.net{d["emblemPath"]}')
+        class_embed.set_thumbnail(url=f'https://www.bungie.net/{d["emblemPath"]}')
         class_embed.set_author(name=user_name, icon_url=class_icon)
         class_embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
         return class_embed
+    
+    async def history_embed(self, character_history, character, user_name):
+        history_embed = discord.Embed(
+            title=f'{character} activity history',
+            description='Last activities sorted by type',
+            type='rich',
+            timestamp=datetime.now(),
+        )
+        pve_history = ' '
+        pvp_history = ' '
+        gambit_history = ' '
+        too_history = ' '
+        strike_history = ' '
+        raid_history = ' '
+        
+        for key, value in character_history.items():
+            if 63 in value['modes']:
+                gambit_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
+                continue
+            elif 84 in value['modes']:
+                too_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
+                continue
+            elif 3 in value['modes']:
+                strike_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
+                continue
+            elif 4 in value['modes']:
+                raid_history += f'{value["activity"]} - {key} - {value["duration"]} \n'     
+                continue     
+            elif 7 in value['modes']:
+                pve_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
+            elif 5 in value['modes']:
+                pvp_history += f'{value["activity"]} - {key} - {value["duration"]} \n'
+         
+        if not pve_history.isspace():
+            history_embed.add_field(name='PvE [Activity] - [Period] - [Duration]',
+                                    value=pve_history, inline=False)
+        if not pvp_history.isspace():
+            history_embed.add_field(name='PvP [Activity] - [Period] - [Duration]',
+                                    value=pvp_history, inline=False)
+        if not gambit_history.isspace():
+            history_embed.add_field(name='Gambit [Activity] - [Period] - [Duration]',
+                                    value=gambit_history, inline=False)           
+        if not too_history.isspace():
+            history_embed.add_field(name='ToO [Activity] - [Period] - [Duration]',
+                                    value=too_history, inline=False)
+        if not strike_history.isspace():
+            history_embed.add_field(name='Strike [Activity] - [Period] - [Duration]',
+                                    value=strike_history, inline=False)
+        if not raid_history.isspace():
+            history_embed.add_field(name='Raid [Activity] - [Period] - [Duration]',
+                                    value=raid_history, inline=False)
+        
+        history_embed.set_author(name=user_name)
+        history_embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
+        
+        return history_embed
 
 
 class MessageLogEmbed(discord.Embed):
@@ -203,3 +267,46 @@ class ChannelLogEmbed(discord.Embed):
         
         channel_embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
         return channel_embed
+    
+    
+class BungieClanEmbed(discord.Embed):
+    def __init__(self):
+        super().__init__()
+        
+    async def info_embed(self, name, callsign, motto, about, author_icon_url,
+                          clan_icon_url, founder_name, level_cap, interaction,
+                          members_list, members_count, creation_date, exp, level,
+                          rewards):
+        
+        members = ''
+        for member in members_list:
+            user = discord.utils.get(interaction.guild.members, display_name=member)
+            if user is not None:
+                members += f'{member} - {user.mention} \n'
+            else:
+                members += f'{member} \n'
+        
+        clan_rewards = ''
+        for key, value in rewards.items():
+            if value == True:
+                clan_rewards += f'{key}: ✅ \n'
+            else:
+                clan_rewards += f'{key}: ❌ \n'
+        
+                                            
+        embed = discord.Embed(title=f'{name} [{callsign}]', description=motto,
+                              color=0xff1a1a, timestamp=datetime.now())
+        embed.set_author(name='Commander Zavala', icon_url=author_icon_url)
+        embed.set_thumbnail(url=clan_icon_url)
+        embed.add_field(name='About', value=about, inline=False)
+        embed.add_field(name='Founder', value=founder_name, inline=True)
+        embed.add_field(name='Creation date', value=creation_date, inline=True)
+        embed.add_field(name='Progression', value=f'Exp: {exp}/600000 \n' \
+                        f'Level: {level}/{level_cap}', inline=False)
+        embed.add_field(name=f'Weekly engrams:', value=clan_rewards, inline=True)
+        embed.add_field(name=f'Members [{members_count}]', value=members,
+                        inline=False)
+        embed.set_image(url='https://bungie.net/img/Themes/Group_Community1/struct_images/group_top_banner.jpg')
+        embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
+        
+        return embed
