@@ -1,8 +1,6 @@
-import discord
 import logging
 import os
 
-from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 from discord_bot.embeds import MessageLogEmbed, ChannelLogEmbed
@@ -25,7 +23,7 @@ class Listeners(commands.Cog):
             log_message = await log_embed.embed('new', message.author, message)
             log_channel = self.bot.get_channel(self.log_channel_id)
             await log_channel.send(embed=log_message)
-            logger.info(f'{message.author} sent message in {message.channel.name}.')
+            logger.info(f'{message.author} sent {message.content} in {message.channel.name}.')
             
         if message.channel.id == int(os.getenv('CHECKPOINTS_CHANNEL_ID')):
             await purge_checkpoint_channel(self.bot)
@@ -39,7 +37,7 @@ class Listeners(commands.Cog):
                                                 after=after)
             log_channel = self.bot.get_channel(self.log_channel_id)
             await log_channel.send(embed=log_message)
-            logger.info(f'{before.author} updated message in {before.channel.name}.')
+            logger.info(f'{before.author} updated {before.content} in {before.channel.name}.')
     
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -48,15 +46,16 @@ class Listeners(commands.Cog):
             log_message = await log_embed.embed('delete', message.author, message)
             log_channel = self.bot.get_channel(self.log_channel_id)
             await log_channel.send(embed=log_message)
-            logger.info(f'Message in {message.channel.name} has been deleted.')
+            logger.info(f'{message.content} in {message.channel.name} has been deleted.'
+                        f'Message author: {message.author}')
     
     @commands.Cog.listener()
-    async def on_guild_channel_create(self, channel):
+    async def on_guild_channel_create(self, channel):   
         log_embed = ChannelLogEmbed()
         log_message = await log_embed.embed('new', channel)
         log_channel = self.bot.get_channel(self.log_channel_id)
         await log_channel.send(embed=log_message)  
-        logger.info(f'Channel {channel.name} has been created.')
+        logger.info(f'Channel "{channel.name}" has been created. ID: {channel.id}. Category: {channel.category}')
         
     
     @commands.Cog.listener()
