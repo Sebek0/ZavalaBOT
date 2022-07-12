@@ -1,6 +1,7 @@
 import urllib
-import aiohttp
 import os
+
+import aiohttp
 
 from dotenv import load_dotenv
 
