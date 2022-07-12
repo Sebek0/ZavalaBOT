@@ -1,12 +1,10 @@
 import os
 import asyncio
 import json
-import time
 import logging
 import datetime
 
 from dotenv import load_dotenv
-
 from bungie_api_wrapper import BAPI
 from custom_logging import CustomFormatter
 from bungie_api_wrapper.manifest import Manifest
@@ -117,22 +115,26 @@ async def get_characters(name, code, platform):
             'items': items
         }
     
-    # in python 3.10.2 this should be replaced with match case
-    if len(characters_ids) == 3:
-        await asyncio.gather(
-            character(profile, characters_ids[0]),
-            character(profile, characters_ids[1]),
-            character(profile, characters_ids[2])
-        )    
-    elif len(characters_ids) == 2:
-        await asyncio.gather(
-            character(profile, characters_ids[0]),
-            character(profile, characters_ids[1])
-        )
-    elif len(characters_ids) == 1:
-        await asyncio.gather(
-            character(profile, characters_ids[0])
-        )
+    
+    await asyncio.gather(
+        *[character(profile, char_id) for char_id in characters_ids]
+    )
+    
+    # if len(characters_ids) == 3:
+    #     await asyncio.gather(
+    #         character(profile, characters_ids[0]),
+    #         character(profile, characters_ids[1]),
+    #         character(profile, characters_ids[2])
+    #     )    
+    # elif len(characters_ids) == 2:
+    #     await asyncio.gather(
+    #         character(profile, characters_ids[0]),
+    #         character(profile, characters_ids[1])
+    #     )
+    # elif len(characters_ids) == 1:
+    #     await asyncio.gather(
+    #         character(profile, characters_ids[0])
+    #     )
     
     await destiny.close()
     with open('characters.json', 'w') as file:
