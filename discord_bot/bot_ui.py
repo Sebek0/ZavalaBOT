@@ -1,6 +1,6 @@
-from time import time
-import discord
 import logging
+
+import discord
 
 from discord_bot.embeds import ClassEmbed
 from dotenv import load_dotenv
