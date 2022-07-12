@@ -1,16 +1,15 @@
-import discord
 import asyncio
 import datetime
 import logging
 import os
 
+import discord
+
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
-
 from bungie_api_wrapper.manifest import Manifest
 from bungie_api_wrapper.async_main import *
-
 
 # Importing commands view
 from discord_bot.bot_ui import *
