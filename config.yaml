@@ -1,0 +1,5 @@
+development: False
+MANIFEST_URL: 'http://www.bungie.net/Platform/Destiny2/Manifest/'
+GROUP_URL: 'https://www.bungie.net/Platform/GroupV2/'
+USER_URL: 'https://www.bungie.net/Platform/User/'
+DESTINY2_URL: 'https://www.bungie.net/Platform/Destiny2/'
