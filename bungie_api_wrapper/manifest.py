@@ -3,6 +3,8 @@ import json
 import os
 import logging
 
+import yaml
+
 from dotenv import load_dotenv
 
 logger = logging.getLogger('bungie_wrapper')
@@ -10,7 +12,9 @@ logger = logging.getLogger('bungie_wrapper')
 class Manifest:
     def __init__(self) -> None:
         load_dotenv()
-        self.manifest_url = os.getenv('MANIFEST_URL')
+        with open('config.yaml') as c_file:
+            config = yaml.load(c_file, Loader=yaml.FullLoader)
+        self.manifest_url = config['MANIFEST_URL']
         self.api_key = os.getenv('BUNGIE_API_KEY')
         
     def check_manifest(self):
