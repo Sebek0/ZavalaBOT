@@ -219,9 +219,6 @@ class Manifest:
             
         return characters
     
-    def decode_clan_leaderboard_from_manifest(): # will do in future
-        pass
-    
     # not working for now
     def get_manifest_item(self, common_data: dict, stats: dict, perks: list) -> dict:
         """Decode single weapon and return decoded dictionary.
