@@ -12,6 +12,7 @@ from bungie_api_wrapper.manifest import Manifest
 
 load_dotenv()
 
+# Will load configuration variables from yaml file to dictionary.
 with open('config.yaml') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
     print(config)
