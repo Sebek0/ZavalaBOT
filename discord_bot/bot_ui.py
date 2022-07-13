@@ -279,7 +279,7 @@ class SelectCharacterView(discord.ui.View):
                 self.add_item(characters[character])
 
     async def on_error(self, interaction: discord.Interaction, error: Exception,
-                       item: discord.ui.Item[Any]) -> None:
+                       item: discord.ui.Item[Any]):
         logger.error(f'{interaction} - {error} - {item}')
         await interaction.response.send_message("Could not fetch character equipment!",
                                          ephemeral=True)
