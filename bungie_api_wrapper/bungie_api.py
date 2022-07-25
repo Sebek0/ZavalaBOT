@@ -1,15 +1,15 @@
 import urllib
-import os
 
+import yaml
 import aiohttp
 
-from dotenv import load_dotenv
+# Will load configuration variables from yaml file to dictionary.
+with open('config.yaml') as f:
+    config = yaml.load(f, Loader=yaml.FullLoader)
 
-load_dotenv()
-
-DESTINY2_URL = os.getenv('DESTINY2_URL')
-USER_URL = os.getenv('USER_URL')
-GROUP_URL = os.getenv('GROUP_URL')
+DESTINY2_URL = config['DESTINY2_URL']
+USER_URL = config['USER_URL']
+GROUP_URL = config['GROUP_URL']
 
 
 class BungieAPI:
