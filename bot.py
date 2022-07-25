@@ -15,7 +15,6 @@ load_dotenv()
 # Will load configuration variables from yaml file to dictionary.
 with open('config.yaml') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
-    print(config)
 
 discord_token = os.getenv('DISCORD_TOKEN')
 guild_id = os.getenv('GUILD_ID')
@@ -32,9 +31,11 @@ logger.setLevel(logging.DEBUG)
 class Bot(commands.Bot):
     def __init__(self) -> None:
         intents = discord.Intents.all()
+        allowed_mentions = discord.AllowedMentions.all()
         if not config['development']:
             self.manifest = Manifest()
-        super().__init__(command_prefix='.', intents=intents)
+        super().__init__(command_prefix='.', allowed_mentions=allowed_mentions,
+                         intents=intents)
     
     async def on_ready(self) -> None:
         logger.debug('About to start {}...'.format(self.user))
