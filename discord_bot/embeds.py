@@ -311,3 +311,49 @@ class BungieClanEmbed(discord.Embed):
         embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
         
         return embed
+    
+    
+class LookingForGroupEmbed(discord.Embed):
+    def __init__(self):
+        super().__init__()
+        self.url = 'https://cdn.discordapp.com/icons/585134417568202836/a_d6a73cfaf80df5157ddf2e889c49ba73.gif?size=1024'
+        
+    def lfg_embed(self, name, description, event_type, slots, members,
+                  interaction, date, author: discord.Member):
+        if event_type == 'pve':
+            color = 0x3498db
+            thumbnail = 'https://static.wikia.nocookie.net/destinypedia/images/f/fd/Vanguard.png/revision/latest?cb=20160123023456'
+        elif event_type == 'pvp':
+            color = 0xe74c3c
+            thumbnail = 'https://static.wikia.nocookie.net/destinypedia/images/3/31/Crucible.png/revision/latest?cb=20160123031406'
+        else:
+            color = 0x99aab5
+            thumbnail = 'https://static.wikia.nocookie.net/destinypedia/images/2/26/Raid_Emblem.png/revision/latest?cb=20140802205132'
+        
+        members_str = ''
+        if len(members) > 0:
+            for member in members:
+                if member.mention is not None:
+                    members_str += f'{member.mention} \n'
+        else:
+            members_str = 'None'
+        
+        embed = discord.Embed(
+            title=name,
+            description=description,
+            color=color,
+            timestamp=datetime.now()
+        )
+        embed.add_field(
+            name='Informations:', value=f'Date: {date} \n'
+                                f'Slots: {slots}', inline=True
+        )
+        embed.add_field(
+            name=f'Members: {len(members)}/{slots}', value=f'{members_str} \n', inline=True
+        )
+        embed.set_author(name=author.display_name,
+                         icon_url= author.avatar.url if author.avatar is not None else author.default_avatar.url)
+        embed.set_thumbnail(url=thumbnail)
+        embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
+
+        return embed
