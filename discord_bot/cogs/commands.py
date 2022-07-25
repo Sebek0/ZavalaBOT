@@ -8,14 +8,20 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
+from requests import session
+from sqlalchemy import desc
 from bungie_api_wrapper.manifest import Manifest
 from bungie_api_wrapper.async_main import *
+
+# Importing database logic and models
+from database.crud import create_event, search_member, session_scope
+from database.models import Event, Member, event_member
 
 # Importing commands view
 from discord_bot.bot_ui import *
 
 # Importing commands embeds
-from discord_bot.embeds import BungieClanEmbed
+from discord_bot.embeds import BungieClanEmbed, LookingForGroupEmbed
 
 logger = logging.getLogger('discord_bot')
 load_dotenv
@@ -64,7 +70,7 @@ class GuardianCog(commands.GroupCog, name='guardian'):
             class_view = SelectCharacterView(decoded_data, str(username),
                                              self.characters_history, command_author_id)
             
-            # check if user is in clan server then fetch his avatar url
+            # check if user is in clan server, then fetch his avatar url
             checked_user = discord.utils.get(interaction.guild.members,
                                              display_name=username)
             if checked_user:
@@ -157,7 +163,159 @@ class ClanCog(commands.GroupCog, name='clan'):
             )
             await interaction.followup.send(embed=clan_embed, view=delete_view)
             logger.info(f'{interaction.user.display_name} used clan info command.')
-        
+
+
+class LookingForGroupCommands(commands.GroupCog, name='lfg'):
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
+        super().__init__()
+    
+    @app_commands.checks.has_role('Clan Members')
+    @app_commands.command(name='pve', description='Create PvE lfg event.')
+    async def pve_event(self, interaction: discord.Interaction, name: str,
+                        description: str, slots: int = 3):
+        lfg_event = LookingForGroupEmbed()
+        members = []
+        now = datetime.datetime.now()
+        date_now = now.strftime("%d-%m-%Y %H:%M:%S")
+        guild = self.bot.get_guild(int(os.getenv('GUILD_ID')))
+        pve_role = guild.get_role(int(os.getenv('PVE_ROLE_ID')))
+        try:
+            event = Event(
+                interaction_id = (interaction.id),
+                author_id=str(interaction.user.id),
+                name=name,
+                description=description,
+                event_type='pve',
+                slots=slots,
+                date=date_now,
+            )
+            # tutaj dodajemy event do bazy
+            
+            lfg_event = lfg_event.lfg_embed(
+                name=name,
+                description=description,
+                event_type='pve',
+                slots=slots,
+                members=members,
+                author=interaction.user,
+                interaction=interaction,
+                date=date_now
+            )
+            view = LFGView(
+            name=name,
+            description=description,
+            event_type='pve',
+            slots=slots,
+            members=members,
+            author=interaction.user,
+            interaction=interaction,
+            date=date_now
+            )
+            await interaction.response.send_message(content=pve_role.mention,
+                                                    embed=lfg_event, view=view)
+                                                    
+        except Exception as e:
+            await interaction.response.send_message(content=f'Error occurred!', ephemeral=True)
+            logger.error(e)
+    
+    @app_commands.checks.has_role('Clan Members')
+    @app_commands.command(name='pvp', description='Create PvP lfg event.')
+    async def pvp_event(self, interaction: discord.Interaction, name: str,
+                        description: str, slots: int = 3):
+        lfg_event = LookingForGroupEmbed()
+        members = []
+        now = datetime.datetime.now()
+        date_now = now.strftime("%d-%m-%Y %H:%M:%S")
+        guild = self.bot.get_guild(int(os.getenv('GUILD_ID')))
+        pvp_role = guild.get_role(int(os.getenv('PVP_ROLE_ID')))
+        try:
+            event = Event(
+                interaction_id = (interaction.id),
+                author_id=str(interaction.user.id),
+                name=name,
+                description=description,
+                event_type='pvp',
+                slots=slots,
+                date=date_now,
+            )
+            # tutaj dodajemy event do bazy
+            
+            lfg_event = lfg_event.lfg_embed(
+                name=name,
+                description=description,
+                event_type='pvp',
+                slots=slots,
+                members=members,
+                author=interaction.user,
+                interaction=interaction,
+                date=date_now
+            )
+            view = LFGView(
+            name=name,
+            description=description,
+            event_type='pvp',
+            slots=slots,
+            members=members,
+            author=interaction.user,
+            interaction=interaction,
+            date=date_now
+            )
+            await interaction.response.send_message(content=pvp_role.mention,
+                                                    embed=lfg_event, view=view)
+                                                    
+        except Exception as e:
+            await interaction.response.send_message(content=f'Error occurred!', ephemeral=True)
+            logger.error(e)
+    
+    @app_commands.checks.has_role('Clan Members')
+    @app_commands.command(name='raid', description='Create Raid lfg event.')
+    async def raid_event(self, interaction: discord.Interaction, name: str,
+                        description: str, slots: int = 6):
+        lfg_event = LookingForGroupEmbed()
+        members = []
+        now = datetime.datetime.now()
+        date_now = now.strftime("%d-%m-%Y %H:%M:%S")
+        guild = self.bot.get_guild(int(os.getenv('GUILD_ID')))
+        pve_role = guild.get_role(int(os.getenv('PVE_ROLE_ID')))
+        try:
+            event = Event(
+                interaction_id = (interaction.id),
+                author_id=str(interaction.user.id),
+                name=name,
+                description=description,
+                event_type='pvp',
+                slots=slots,
+                date=date_now,
+            )
+            # tutaj dodajemy event do bazy
+            
+            lfg_event = lfg_event.lfg_embed(
+                name=name,
+                description=description,
+                event_type='pvp',
+                slots=slots,
+                members=members,
+                author=interaction.user,
+                interaction=interaction,
+                date=date_now
+            )
+            view = LFGView(
+            name=name,
+            description=description,
+            event_type='pvp',
+            slots=slots,
+            members=members,
+            author=interaction.user,
+            interaction=interaction,
+            date=date_now
+            )
+            await interaction.response.send_message(content=pve_role.mention,
+                                                    embed=lfg_event, view=view)
+                                                    
+        except Exception as e:
+            await interaction.response.send_message(content=f'Error occurred!', ephemeral=True)
+            logger.error(e)
 
 class UtilityCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
@@ -200,8 +358,17 @@ class UtilityCommands(commands.Cog):
             await asyncio.sleep(1)
             await message.delete()
         await interaction.followup.send(f'Removed {amount} messages!', ephemeral=True)
-                    
+    
+    @app_commands.checks.has_role('Founding Fathers')
+    @app_commands.command(name='db', description='testdbconnection')
+    async def test_db(self, interaction: discord.Interaction, m_id: str):
+        with session_scope() as s:
+            member = s.query(Member).filter_by(discord_id = m_id).first()
+            await interaction.response.send_message(f'{member.name}', ephemeral=True)
+            
+        
 async def setup(bot: commands.Bot) -> None:
-    commands_list = [ClanCog(bot), GuardianCog(bot), UtilityCommands(bot)] 
+    commands_list = [ClanCog(bot), GuardianCog(bot), UtilityCommands(bot),
+                     LookingForGroupCommands(bot)] 
     for command in commands_list:
         await bot.add_cog(command, guild=discord.Object(id=585134417568202836))
