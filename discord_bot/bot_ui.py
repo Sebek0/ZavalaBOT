@@ -1,12 +1,15 @@
 import logging
 
 import discord
+from sqlalchemy import desc
 
-from discord_bot.embeds import ClassEmbed
+from discord_bot.embeds import ClassEmbed, LookingForGroupEmbed
 from dotenv import load_dotenv
 from typing import Any
 from bungie_api_wrapper.async_main import get_characters
 from bungie_api_wrapper.manifest import Manifest
+from database.crud import session_scope
+from database.models import Member, Event
 
 load_dotenv()
 
@@ -189,6 +192,104 @@ class ClanLeaderboardPVEButton(discord.ui.Button):
                                                     view=pve_leaderboard_view)
 
 
+class LFGJoinButton(discord.ui.Button):
+    def __init__(self, name, description, event_type, slots, members,
+                 interaction, author, date):
+        super().__init__(
+            label='Join',
+            custom_id='lfgjoin',
+            style=discord.ButtonStyle.green
+        )
+        self.lfg_embed = LookingForGroupEmbed()
+        self.name = name
+        self.description = description
+        self.event_type = event_type
+        self.slots = slots
+        self.members = members
+        self.interaction = interaction
+        self.author = author
+        self.date = date
+    
+    async def callback(self, interaction: discord.Interaction):
+        if not interaction.user in self.members:
+            self.members.append(interaction.user)
+            if len(self.members) >= self.slots:
+                self.disabled = True
+            lfg_embed = self.lfg_embed.lfg_embed(self.name, self.description, self.event_type,
+                                             self.slots, self.members, self.interaction,
+                                             self.date, self.author)
+            await interaction.response.edit_message(embed=lfg_embed, view=self.view)
+
+
+class LFGLeaveButton(discord.ui.Button):
+    def __init__(self, name, description, event_type, slots, members,
+                 interaction, author, date):
+        super().__init__(
+            label='Leave',
+            custom_id='lfgleave',
+            style=discord.ButtonStyle.red
+        )
+        self.lfg_embed = LookingForGroupEmbed()
+        self.name = name
+        self.description = description
+        self.event_type = event_type
+        self.slots = slots
+        self.members = members
+        self.interaction = interaction
+        self.author = author
+        self.date = date
+    
+    async def callback(self, interaction: discord.Interaction):
+        if interaction.user in self.members:
+            self.members.remove(interaction.user)
+            if len(self.members) < self.slots:
+                for children in self.view.children:
+                    if children.custom_id == 'lfgjoin':
+                        children.disabled = False
+            lfg_embed = self.lfg_embed.lfg_embed(self.name, self.description, self.event_type,
+                                             self.slots, self.members, self.interaction,
+                                             self.date, self.author)
+            await interaction.response.edit_message(embed=lfg_embed, view=self.view)
+
+
+class LFGView(discord.ui.View):
+    def __init__(self, name, description, event_type, slots, members,
+                 interaction, author, date):
+        super().__init__(timeout=180)
+        self.buttons = [
+            LFGJoinButton(
+                name=name,
+                description=description,
+                event_type=event_type,
+                slots=slots,
+                members=members,
+                interaction=interaction,
+                author=author,
+                date=date
+            ),
+            LFGLeaveButton(
+                name=name,
+                description=description,
+                event_type=event_type,
+                slots=slots,
+                members=members,
+                interaction=interaction,
+                author=author,
+                date=date
+            )
+        ]
+
+        for button in self.buttons:
+            self.add_item(button)
+    
+    async def on_error(self, error: Exception, interaction: discord.Interaction,
+                       item: discord.ui.Item[Any]):
+        return await super().on_error(error, item, interaction)
+    
+    async def on_timeout(self):
+        return await super().on_timeout()
+        
+    
 class SelectClanLeaderboardType(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=600)
