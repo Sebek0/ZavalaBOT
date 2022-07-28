@@ -181,15 +181,42 @@ async def get_clan_members(group_id):
     try:
         for x in response:
             try:
-                name = x['bungieNetUserInfo']['bungieGlobalDisplayName']
-                code = x['bungieNetUserInfo']['bungieGlobalDisplayNameCode']
-                if not name:
-                    pass
-                else:
-                    member = f'{name}#{code}'
-                    members_list.append(member)   
+                name = ''
+                code = ''
+                # If code is None that mean the player did not
+                # log into game after name#code change.
+                if 'bungieGlobalDisplayName' in x['destinyUserInfo'].keys():
+                    name = x['destinyUserInfo']['bungieGlobalDisplayName']
+                    if len(name) == 0:
+                        name = x['destinyUserInfo']['LastSeenDisplayName']
+                if 'bungieGlobalDisplayNameCode' in x['destinyUserInfo'].keys():
+                    code = x['destinyUserInfo']['bungieGlobalDisplayNameCode']
+                    if len(str(code)) == 3:
+                        code = f'0{code}'
+                
+                member = f'{name}#{code}'
+                members_list.append(member) 
+                
+                # if 'bungieGlobalDisplayName' and 'bungieGlobalDisplayNameCode' \
+                #     in x['destinyUserInfo'].keys():
+                #     name = x['destinyUserInfo']['bungieGlobalDisplayName']
+                #     if len(name) > 0:
+                #         if len(code) >= 4:
+                #             code = x['destinyUserInfo']['bungieGlobalDisplayNameCode']
+                #             member = f'{name}#{code}'
+                #             members_list.append(member)
+                #         else:
+                #             code = x['destinyUserInfo']['bungieGlobalDisplayNameCode']
+                #             code = f'0{code}'
+                #             member = f'{name}#{code}'
+                #             members_list.append(member)
+                #     else:
+                #         name = x['destinyUserInfo']['LastSeenDisplayName']
+                #         code = x['destinyUserInfo']['bungieGlobalDisplayNameCode']
+                #         member = f'{name}#{code}'
+                #         members_list.append(member) 
             except KeyError as k_error:
-                logger.error(k_error)
+                logger.error(f"{x['destinyUserInfo']['displayName']} - {k_error}")
     except KeyError as error:
         logger.error(error)
     
