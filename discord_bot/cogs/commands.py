@@ -5,7 +5,7 @@ import os
 
 import discord
 
-from discord import app_commands
+from discord import Interaction, app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 from requests import session
@@ -31,6 +31,7 @@ class GuardianCog(commands.GroupCog, name='guardian'):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         super().__init__()
+        self.url = 'https://cdn.discordapp.com/icons/585134417568202836/a_d6a73cfaf80df5157ddf2e889c49ba73.gif?size=1024'
         
     @app_commands.command(name='check', description='Check Destiny 2 characters loadout')
     async def guardian_check(self, interaction: discord.Interaction,
@@ -83,15 +84,23 @@ class GuardianCog(commands.GroupCog, name='guardian'):
             discord_user = discord.utils.get(interaction.guild.members,
                                              display_name=username)
             if discord_user is not None:
-                embed = discord.Embed(description=f'{discord_user.mention}')
+                embed = discord.Embed(description=f'{discord_user.mention}',
+                                      timestamp=datetime.datetime.now())
             else:
-                embed = discord.Embed(description=f'{username}')
+                embed = discord.Embed(description=f'{username}',
+                                      timestamp=datetime.datetime.now())
                 
             for character, value in decoded_data.items():
                 in_game_time = int(value['minutesPlayedTotal']) / 60
                 last_time_login = value['dateLastPlayed'].replace("T", " ").replace("Z", "")
+                if character == 'Warlock':
+                    char_emoji = '<:warlock:1001823857818218497>'
+                elif character == 'Hunter':
+                    char_emoji = '<:hunter:1001823855431651340>'
+                elif character == 'Titan':
+                    char_emoji = '<:titan:1001823856526368769>'
                 embed.add_field(
-                    name=f'<:tricorn:983458457069969429> **{character}**',
+                    name=f'{char_emoji} **{character}**',
                     value=f'Race: **{value["raceName"]}** \n \
                             Light: **{value["light"]}** \n \
                             Last login: **{last_time_login}** \n \
@@ -99,6 +108,7 @@ class GuardianCog(commands.GroupCog, name='guardian'):
                 )
 
             embed.set_author(name=username, icon_url=user_icon)
+            embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
             await interaction.followup.send(embed=embed, view=class_view)
             logger.info(f'{interaction.user.display_name} used guardian check command.')
         
@@ -115,7 +125,7 @@ class ClanCog(commands.GroupCog, name='clan'):
         await interaction.followup.send(content='Test', view=leaderboard_type)
         
     @app_commands.command(name='info', description='Display Destiny 2 clan informations.')
-    async def clan_info(self, interaction: discord.Interaction, group_id: int = None):
+    async def clan_info(self, interaction: discord.Interaction, group_id: str = None):
         await interaction.response.defer()
         delete_view = DeleteMessageView()
         if group_id is None:
@@ -144,13 +154,13 @@ class ClanCog(commands.GroupCog, name='clan'):
             logger.info(f'{interaction.user.display_name} used clan info command.')
         else:
             clan_info = await get_clan_informations(group_id)
+            clan_rewards = await get_destiny_clan_weekly_rewards(group_id)
             clan_embed = BungieClanEmbed()
             clan_embed = await clan_embed.info_embed(
                 name=clan_info['name'],
                 callsign=clan_info['callsign'],
                 motto=clan_info['motto'],
                 about=clan_info['about'],
-                author_name=self.bot.user.display_name,
                 author_icon_url=self.bot.user.display_avatar,
                 clan_icon_url=clan_info['clan_icon_url'],
                 founder_name=clan_info['founder'],
@@ -159,7 +169,9 @@ class ClanCog(commands.GroupCog, name='clan'):
                 members_count=clan_info['members_count'],
                 creation_date=clan_info['creation_date'],
                 exp=clan_info['exp'],
-                level=clan_info['level']
+                level=clan_info['level'],
+                interaction=interaction,
+                rewards=clan_rewards
             )
             await interaction.followup.send(embed=clan_embed, view=delete_view)
             logger.info(f'{interaction.user.display_name} used clan info command.')
@@ -180,6 +192,7 @@ class LookingForGroupCommands(commands.GroupCog, name='lfg'):
         date_now = now.strftime("%d-%m-%Y %H:%M:%S")
         guild = self.bot.get_guild(int(os.getenv('GUILD_ID')))
         pve_role = guild.get_role(int(os.getenv('PVE_ROLE_ID')))
+        
         try:
             event = Event(
                 interaction_id = (interaction.id),
@@ -212,7 +225,7 @@ class LookingForGroupCommands(commands.GroupCog, name='lfg'):
             interaction=interaction,
             date=date_now
             )
-            await interaction.response.send_message(content=pve_role.mention,
+            await interaction.response.send_message(content='pve_role.mention',
                                                     embed=lfg_event, view=view)
                                                     
         except Exception as e:
@@ -261,7 +274,7 @@ class LookingForGroupCommands(commands.GroupCog, name='lfg'):
             interaction=interaction,
             date=date_now
             )
-            await interaction.response.send_message(content=pvp_role.mention,
+            await interaction.response.send_message(content='pvp_role.mention',
                                                     embed=lfg_event, view=view)
                                                     
         except Exception as e:
@@ -271,9 +284,10 @@ class LookingForGroupCommands(commands.GroupCog, name='lfg'):
     @app_commands.checks.has_role('Clan Members')
     @app_commands.command(name='raid', description='Create Raid lfg event.')
     async def raid_event(self, interaction: discord.Interaction, name: str,
-                        description: str, slots: int = 6):
+                        description: str):
         lfg_event = LookingForGroupEmbed()
         members = []
+        slots = 6
         now = datetime.datetime.now()
         date_now = now.strftime("%d-%m-%Y %H:%M:%S")
         guild = self.bot.get_guild(int(os.getenv('GUILD_ID')))
@@ -284,7 +298,7 @@ class LookingForGroupCommands(commands.GroupCog, name='lfg'):
                 author_id=str(interaction.user.id),
                 name=name,
                 description=description,
-                event_type='pvp',
+                event_type='raid',
                 slots=slots,
                 date=date_now,
             )
@@ -293,7 +307,7 @@ class LookingForGroupCommands(commands.GroupCog, name='lfg'):
             lfg_event = lfg_event.lfg_embed(
                 name=name,
                 description=description,
-                event_type='pvp',
+                event_type='raid',
                 slots=slots,
                 members=members,
                 author=interaction.user,
@@ -303,14 +317,14 @@ class LookingForGroupCommands(commands.GroupCog, name='lfg'):
             view = LFGView(
             name=name,
             description=description,
-            event_type='pvp',
+            event_type='raid',
             slots=slots,
             members=members,
             author=interaction.user,
             interaction=interaction,
             date=date_now
             )
-            await interaction.response.send_message(content=pve_role.mention,
+            await interaction.response.send_message(content='mention',
                                                     embed=lfg_event, view=view)
                                                     
         except Exception as e:
@@ -321,7 +335,8 @@ class UtilityCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         super().__init__()
-        
+    
+    
     @app_commands.command(name='countdown', description='Countdown timer')
     async def countdown(self, interaction: discord.Interaction, time: int, update: int):
         await interaction.response.send_message('Starting countdown!', ephemeral=True)
@@ -359,16 +374,18 @@ class UtilityCommands(commands.Cog):
             await message.delete()
         await interaction.followup.send(f'Removed {amount} messages!', ephemeral=True)
     
-    @app_commands.checks.has_role('Founding Fathers')
-    @app_commands.command(name='db', description='testdbconnection')
-    async def test_db(self, interaction: discord.Interaction, m_id: str):
-        with session_scope() as s:
-            member = s.query(Member).filter_by(discord_id = m_id).first()
-            await interaction.response.send_message(f'{member.name}', ephemeral=True)
-            
+
+class HelpCommand(commands.Cog):
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
+        super().__init__()     
+        
+    @app_commands.command(name='help', description='Display commands description')
+    async def help_command(self, interaction: discord.Interaction):
+        pass
         
 async def setup(bot: commands.Bot) -> None:
     commands_list = [ClanCog(bot), GuardianCog(bot), UtilityCommands(bot),
-                     LookingForGroupCommands(bot)] 
+                     LookingForGroupCommands(bot), HelpCommand(bot)] 
     for command in commands_list:
         await bot.add_cog(command, guild=discord.Object(id=585134417568202836))
