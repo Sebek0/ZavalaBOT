@@ -1,4 +1,6 @@
+from cgitb import text
 import logging
+import textwrap
 
 import discord
 
@@ -50,7 +52,7 @@ class ClassEmbed(discord.Embed):
             
             
         class_embed.add_field(
-            name='Items:',
+            name='<:weapons:1001823859365920838> Items:',
             value='**Kinetic:** `{}` \n {} \n **Energy:** `{}` \n {} \n **Heavy:** `{}` \n {}' \
                 .format(d['items']['Kinetic Weapons']['common_data']['item_name'],
                         kinetic_perks,
@@ -82,7 +84,7 @@ class ClassEmbed(discord.Embed):
             logger.error(f'KeyError: {key_error} in armor values {v["name"]}')
             
         class_embed.add_field(
-            name='Armors:',
+            name='<:armor:1001823854089482341> Armors:',
             value='**Helmet:** `{}` \n {} \n **Gauntlets:** `{}` \n {} \n **Armor:** `{}` \n {} \n **Legs:** `{}` \n {} \n **Class:** `{}` \n {}' \
                 .format(d['items']['Helmet']['common_data']['item_name'],
                         helmet_perks,
@@ -273,19 +275,23 @@ class ChannelLogEmbed(discord.Embed):
 class BungieClanEmbed(discord.Embed):
     def __init__(self):
         super().__init__()
+        self.url = 'https://cdn.discordapp.com/icons/585134417568202836/a_d6a73cfaf80df5157ddf2e889c49ba73.gif?size=1024'
         
     async def info_embed(self, name, callsign, motto, about, author_icon_url,
                           clan_icon_url, founder_name, level_cap, interaction,
                           members_list, members_count, creation_date, exp, level,
                           rewards):
-        
+          
         members = ''
         for member in members_list:
             user = discord.utils.get(interaction.guild.members, display_name=member)
             if user is not None:
-                members += f'{member} - {user.mention} \n'
+                members += f'{member} - {user.mention}\n'
             else:
-                members += f'{member} \n'
+                members += f'{member}\n'
+        
+        w = textwrap.TextWrapper(900, break_long_words=False, replace_whitespace=False)
+        members_string_list = w.wrap(members)
         
         clan_rewards = ''
         for key, value in rewards.items():
@@ -293,8 +299,7 @@ class BungieClanEmbed(discord.Embed):
                 clan_rewards += f'{key}: ✅ \n'
             else:
                 clan_rewards += f'{key}: ❌ \n'
-        
-                                            
+                         
         embed = discord.Embed(title=f'{name} [{callsign}]', description=motto,
                               color=0xff1a1a, timestamp=datetime.now())
         embed.set_author(name='Commander Zavala', icon_url=author_icon_url)
@@ -305,8 +310,12 @@ class BungieClanEmbed(discord.Embed):
         embed.add_field(name='Progression', value=f'Exp: {exp}/600000 \n' \
                         f'Level: {level}/{level_cap}', inline=False)
         embed.add_field(name=f'Weekly engrams:', value=clan_rewards, inline=True)
-        embed.add_field(name=f'Members [{members_count}]', value=members,
-                        inline=False)
+        for index, member_str in enumerate(members_string_list):
+            embed.add_field(name=f'Members [{index+1}/{len(members_string_list)}]',
+                            value=member_str, inline=False)
+        # Old version still working
+        #embed.add_field(name=f'Members [{members_count}]', value=members[0],
+                        #inline=False)
         embed.set_image(url='https://bungie.net/img/Themes/Group_Community1/struct_images/group_top_banner.jpg')
         embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
         
@@ -322,13 +331,13 @@ class LookingForGroupEmbed(discord.Embed):
                   interaction, date, author: discord.Member):
         if event_type == 'pve':
             color = 0x3498db
-            thumbnail = 'https://static.wikia.nocookie.net/destinypedia/images/f/fd/Vanguard.png/revision/latest?cb=20160123023456'
+            thumbnail = 'https://cdn.discordapp.com/attachments/514177919648661504/1001803554232729650/f2154b781b36b19760efcb23695c66fe.png'
         elif event_type == 'pvp':
             color = 0xe74c3c
-            thumbnail = 'https://static.wikia.nocookie.net/destinypedia/images/3/31/Crucible.png/revision/latest?cb=20160123031406'
-        else:
+            thumbnail = 'https://cdn.discordapp.com/attachments/514177919648661504/1001804037869535292/cc8e6eea2300a1e27832d52e9453a227.png'
+        elif event_type == 'raid':
             color = 0x99aab5
-            thumbnail = 'https://static.wikia.nocookie.net/destinypedia/images/2/26/Raid_Emblem.png/revision/latest?cb=20140802205132'
+            thumbnail = 'https://cdn.discordapp.com/attachments/514177919648661504/1001803553905586267/8b1bfd1c1ce1cab51d23c78235a6e067.png'
         
         members_str = ''
         if len(members) > 0:
@@ -345,7 +354,8 @@ class LookingForGroupEmbed(discord.Embed):
             timestamp=datetime.now()
         )
         embed.add_field(
-            name='Informations:', value=f'Date: {date} \n'
+            name='Informations:', value=f'Author: {author.mention} \n'
+                                f'Date: {date} \n'
                                 f'Slots: {slots}', inline=True
         )
         embed.add_field(
@@ -356,4 +366,4 @@ class LookingForGroupEmbed(discord.Embed):
         embed.set_thumbnail(url=thumbnail)
         embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
 
-        return embed
+        return embed 
