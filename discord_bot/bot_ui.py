@@ -219,6 +219,9 @@ class LFGJoinButton(discord.ui.Button):
                                              self.slots, self.members, self.interaction,
                                              self.date, self.author)
             await interaction.response.edit_message(embed=lfg_embed, view=self.view)
+        else:
+            await interaction.response.send_message('You already joined this event!',
+                                                    ephemeral=True)
 
 
 class LFGLeaveButton(discord.ui.Button):
@@ -250,6 +253,9 @@ class LFGLeaveButton(discord.ui.Button):
                                              self.slots, self.members, self.interaction,
                                              self.date, self.author)
             await interaction.response.edit_message(embed=lfg_embed, view=self.view)
+        else:
+            await interaction.response.send_message('You have to join event before leaving it!',
+                                                    ephemeral=True)
 
 
 class LFGView(discord.ui.View):
