@@ -1,4 +1,3 @@
-from cgitb import text
 import logging
 import textwrap
 
@@ -98,8 +97,10 @@ class ClassEmbed(discord.Embed):
                         class_item_perks),
             inline=True
         )
+        
+        temp_icon = 'https://www.bungie.net/common/destiny2_content/icons/ff9ae161808440f0f7def6a9c5857170.png'
         class_embed.set_thumbnail(url=f'https://www.bungie.net/{d["emblemPath"]}')
-        class_embed.set_author(name=user_name, icon_url=class_icon)
+        class_embed.set_author(name=user_name, icon_url=temp_icon)
         class_embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
         return class_embed
     
