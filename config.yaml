@@ -1,4 +1,4 @@
-development: True
+development: False
 server_logging: False
 MANIFEST_URL: 'http://www.bungie.net/Platform/Destiny2/Manifest/'
 GROUP_URL: 'https://www.bungie.net/Platform/GroupV2/'
