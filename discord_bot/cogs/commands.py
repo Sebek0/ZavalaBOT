@@ -11,9 +11,6 @@ from dotenv import load_dotenv
 from bungie_api_wrapper.manifest import Manifest
 from bungie_api_wrapper.async_main import *
 
-# Importing database logic and models
-from database.models import Event, Member, event_member
-
 # Importing commands view
 from discord_bot.bot_ui import *
 
@@ -104,7 +101,7 @@ class GuardianCog(commands.GroupCog, name='guardian'):
                             In-game time: **{int(in_game_time)} hours**'
                 )
 
-            embed.set_author(name=username, icon_url=user_icon)
+            embed.set_author(name=username)
             embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
             await interaction.followup.send(embed=embed, view=class_view)
             logger.info(f'{interaction.user.display_name} used guardian check command.')
@@ -338,18 +335,9 @@ class UtilityCommands(commands.Cog):
             await message.delete()
         await interaction.followup.send(f'Removed {amount} messages!', ephemeral=True)
     
-
-class HelpCommand(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
-        self.bot = bot
-        super().__init__()     
-        
-    @app_commands.command(name='help', description='Display commands description')
-    async def help_command(self, interaction: discord.Interaction):
-        pass
         
 async def setup(bot: commands.Bot) -> None:
     commands_list = [ClanCog(bot), GuardianCog(bot), UtilityCommands(bot),
-                     LookingForGroupCommands(bot), HelpCommand(bot)] 
+                     LookingForGroupCommands(bot)] 
     for command in commands_list:
         await bot.add_cog(command, guild=discord.Object(id=int(os.getenv('GUILD_ID'))))
