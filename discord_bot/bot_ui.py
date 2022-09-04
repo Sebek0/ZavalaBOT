@@ -1,15 +1,12 @@
 import logging
 
 import discord
-from sqlalchemy import desc
 
 from discord_bot.embeds import ClassEmbed, LookingForGroupEmbed
 from dotenv import load_dotenv
 from typing import Any
 from bungie_api_wrapper.async_main import get_characters
 from bungie_api_wrapper.manifest import Manifest
-from database.crud import session_scope
-from database.models import Member, Event
 
 load_dotenv()
 
