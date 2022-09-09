@@ -41,18 +41,27 @@ async def get_characters(name, code, platform):
     characters_informations = {}
     
     # get user membershipId from API request
-    destiny_membership_id = await destiny.api.post_search_destiny_player(
+    destiny_membership = await destiny.api.post_search_destiny_player(
         platform, {'displayName': name, 'displayNameCode': code}
     )
-    destiny_membership_id = destiny_membership_id['Response'][0]['membershipId']
+    
+    destiny_membership_id = destiny_membership['Response'][0]['membershipId']
+    
+    if destiny_membership['Response'][0]['crossSaveOverride'] != 0:
+        linked_profiles = await destiny.api.get_linked_profiles(destiny_membership_id,
+                                                                3, 'false')
+        for profile in linked_profiles['Response']['profiles']:
+            if profile['isCrossSavePrimary']:
+                destiny_membership_id = profile['membershipId']
+                platform = profile['membershipType']
 
     # get user profile from API request
     profile = await destiny.api.get_destiny_profile(destiny_membership_id,
-                                                    3, [100, 200, 205])
+                                                    platform, [100, 200, 205])
     
     characters_ids = profile['Response']['profile']['data']['characterIds']
     
-    async def character(profile, character_id):
+    async def character(profile, character_id, platform):
         """Add character information in hash values to characters dictionary.
         
         Function will add all informations about single character in hash values,
@@ -80,7 +89,7 @@ async def get_characters(name, code, platform):
                     item_raw_data = {}
                     item_resp = await destiny.api.get_item(destiny_membership_id,
                                                            item[i]['itemInstanceId'],
-                                                           3, [302, 304, 307])
+                                                           platform, [302, 304, 307])
                     
                     i_hash = item_resp['Response']['item']['data']['itemHash']
                     b_hash = item_resp['Response']['item']['data']['bucketHash']
@@ -98,11 +107,13 @@ async def get_characters(name, code, platform):
                     item_raw_data['perks'] = item_perks
                     
                     items[b_hash] = item_raw_data
+                    print(char_data['classHash'])
             except KeyError as k_error:
                 logger.error(f'{k_error} Bucket: {item[i]["bucketHash"]} \
                       Item: {item[i]["itemHash"]} Class: {char_data["classHash"]} \
                           ItemInstanceId: {item[i]["itemInstanceId"]}')
                 
+                                      
         characters_informations[char_data['classHash']] = {
             'dateLastPlayed': char_data['dateLastPlayed'],
             'emblemBackgroundPath': char_data['emblemBackgroundPath'],
@@ -117,7 +128,7 @@ async def get_characters(name, code, platform):
     
     
     await asyncio.gather(
-        *[character(profile, char_id) for char_id in characters_ids]
+        *[character(profile, char_id, platform) for char_id in characters_ids]
     )
     
     # if len(characters_ids) == 3:
@@ -257,7 +268,7 @@ async def get_character_history(name, code, platform, count=5, mode=None, page=0
     )
     destiny_membership_id = destiny_membership_id['Response'][0]['membershipId']
     
-    profile = await destiny.api.get_destiny_profile(destiny_membership_id, 3, [200])
+    profile = await destiny.api.get_destiny_profile(destiny_membership_id, platform, [200])
     profile = profile['Response']['characters']['data']
     
     characters = {}
