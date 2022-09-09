@@ -27,9 +27,13 @@ class GuardianCog(commands.GroupCog, name='guardian'):
         super().__init__()
         self.url = 'https://cdn.discordapp.com/icons/585134417568202836/a_d6a73cfaf80df5157ddf2e889c49ba73.gif?size=1024'
         
-    @app_commands.command(name='check', description='Check Destiny 2 characters loadout')
+    @app_commands.command(name='check', description='Check Destiny2 loadout - '
+                          'Steam: `pc`, PSN: `ps`, XBOX: `xbox`')
     async def guardian_check(self, interaction: discord.Interaction,
-                             username: str = None):
+                             username: str = None, platform: str = 'pc'):
+        
+        platforms = {'pc': 3, 'ps': 2, 'xbox': 1}
+        
         if username is None:
             await interaction.response.send_modal(CheckModal())
             logger.info(f'{interaction.user.display_name} used modal guardian check command.')
@@ -45,11 +49,13 @@ class GuardianCog(commands.GroupCog, name='guardian'):
             self.characters_history = {}
             
             # this thing makes it possible to gather multiple request in the same
-            # time, doing that makes overall time for command to execute is halfed.
+            # time. Doing it this way reduces the command execution time by half.
             async def fetch_characters(self):
-                self.characters_data = await get_characters(name, code, 3)
+                self.characters_data = await get_characters(name, code,
+                                                            platforms[platform.lower()])
             async def fetch_history(self):
-                self.characters_history = await get_character_history(name, code, 3)
+                self.characters_history = await get_character_history(name, code,
+                                                                      platforms[platform.lower()])
                 
             await asyncio.gather(
                 fetch_characters(self),
