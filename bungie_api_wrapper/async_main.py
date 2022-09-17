@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from bungie_api_wrapper import BAPI
 from custom_logging import CustomFormatter
 from bungie_api_wrapper.manifest import Manifest
+from tqdm import tqdm
 
 load_dotenv()
 
@@ -21,7 +22,7 @@ logger.setLevel(logging.DEBUG)
 
 API_KEY = os.getenv('BUNGIE_API_KEY')
 
-async def get_characters(name, code, platform):
+async def get_characters(destiny_membership_id, platform):
     """Return characters information in hash values.
     
     Function will return all information about User characters in hash values.
@@ -40,19 +41,13 @@ async def get_characters(name, code, platform):
     destiny = BAPI(API_KEY)
     characters_informations = {}
     
-    # get user membershipId from API request
-    destiny_membership_id = await destiny.api.post_search_destiny_player(
-        platform, {'displayName': name, 'displayNameCode': code}
-    )
-    destiny_membership_id = destiny_membership_id['Response'][0]['membershipId']
-
     # get user profile from API request
     profile = await destiny.api.get_destiny_profile(destiny_membership_id,
-                                                    3, [100, 200, 205])
+                                                    platform, [100, 200, 205])
     
     characters_ids = profile['Response']['profile']['data']['characterIds']
     
-    async def character(profile, character_id):
+    async def character(profile, character_id, platform):
         """Add character information in hash values to characters dictionary.
         
         Function will add all informations about single character in hash values,
@@ -73,14 +68,14 @@ async def get_characters(name, code, platform):
                             '3683254069', '4023194814', '4292445962', '4274335291',
                             '3284755031']
         
-        for i in range(len(items_data)):
+        for i in tqdm(range(len(items_data)), desc=f'Fetching {char_data["classHash"]} equipment'):
             item = items_data
             try:
                 if not str(item[i]['bucketHash']) in no_weapon_buckets:
                     item_raw_data = {}
                     item_resp = await destiny.api.get_item(destiny_membership_id,
                                                            item[i]['itemInstanceId'],
-                                                           3, [302, 304, 307])
+                                                           platform, [302, 304, 307])
                     
                     i_hash = item_resp['Response']['item']['data']['itemHash']
                     b_hash = item_resp['Response']['item']['data']['bucketHash']
@@ -103,6 +98,7 @@ async def get_characters(name, code, platform):
                       Item: {item[i]["itemHash"]} Class: {char_data["classHash"]} \
                           ItemInstanceId: {item[i]["itemInstanceId"]}')
                 
+                                      
         characters_informations[char_data['classHash']] = {
             'dateLastPlayed': char_data['dateLastPlayed'],
             'emblemBackgroundPath': char_data['emblemBackgroundPath'],
@@ -117,7 +113,7 @@ async def get_characters(name, code, platform):
     
     
     await asyncio.gather(
-        *[character(profile, char_id) for char_id in characters_ids]
+        *[character(profile, char_id, platform) for char_id in characters_ids]
     )
     
     # if len(characters_ids) == 3:
@@ -248,16 +244,12 @@ async def get_destiny_clan_weekly_rewards(group_id):
     await destiny.close()
     return clan_weekly_rewards
 
-async def get_character_history(name, code, platform, count=5, mode=None, page=0):
+async def get_character_history(destiny_membership_id, platform, count=5,
+                                mode=None, page=0):
     destiny = BAPI(API_KEY)
     manifest = Manifest()
     
-    destiny_membership_id = await destiny.api.post_search_destiny_player(
-        platform, {'displayName': name, 'displayNameCode': code}
-    )
-    destiny_membership_id = destiny_membership_id['Response'][0]['membershipId']
-    
-    profile = await destiny.api.get_destiny_profile(destiny_membership_id, 3, [200])
+    profile = await destiny.api.get_destiny_profile(destiny_membership_id, platform, [200])
     profile = profile['Response']['characters']['data']
     
     characters = {}

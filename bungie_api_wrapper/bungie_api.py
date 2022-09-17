@@ -168,7 +168,7 @@ class BungieAPI:
         
         Args:
             global_name (str): Global Bungie displayName.
-            platform (int): Destiny2 membershipType
+            platform (int): Destiny2 membershipType.
             
         Returns:
             json: request Response.
@@ -199,6 +199,28 @@ class BungieAPI:
         url = DESTINY2_URL + '{}/Profile/{}/?components={}'
         url = url.format(platform, destiny_membership_id,
                          ','.join([str(i) for i in components]))
+        
+        return await self._get_request(url)
+
+    async def get_linked_profiles(self, destiny_membership_id, platform,
+                                  all_memberships):
+        """Returns a summary information about all linked profiles.
+
+        It only returns the minimal amount of data to begin making more
+        substantive requests, but will hopefully serve as a useful alternative
+        to UserServices for people who just care about Destiny data. Note that
+        it will only return linked accounts whose linkages you are allowed to view.
+
+        Args:
+            destiny_membership_id (int): Destiny membershipId.
+            platform (int): Destiny2 membershipType.
+            
+        Returns:
+            json: request Response.
+        """
+        
+        url = DESTINY2_URL + '{}/Profile/{}/LinkedProfiles/?getAllMemberships={}'
+        url = url.format(platform, destiny_membership_id, all_memberships)
         
         return await self._get_request(url)
     

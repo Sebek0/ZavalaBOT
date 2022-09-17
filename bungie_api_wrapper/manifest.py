@@ -6,8 +6,10 @@ import logging
 import yaml
 
 from dotenv import load_dotenv
+from tqdm import tqdm
 
 logger = logging.getLogger('bungie_wrapper')
+
 
 class Manifest:
     def __init__(self) -> None:
@@ -28,6 +30,8 @@ class Manifest:
         
         if not os.path.isdir(r'bungie_api_wrapper/Manifest'):
             self.get_manifest_files()
+        elif not os.path.isfile(r'bungie_api_wrapper/Manifest/version.json'):
+            self.get_manifest_files()
         else:
             get_manifest = requests.get(self.manifest_url)
             manifest_data = get_manifest.json()
@@ -35,7 +39,7 @@ class Manifest:
                 version_data = json.load(v_file)
                 version = version_data['version']
             if version != str(manifest_data['Response']['version']):
-                logger.info('Manifest version is outdated! Downloading new version...')
+                logger.info('Manifest version is outdated! Fetching new version...')
                 self.get_manifest_files()
                 if os.path.isfile(r'bungie_api_wrapper/Manifest/version.json'):
                     logger.info('Downloading complete, version is up to date.')
@@ -47,7 +51,7 @@ class Manifest:
     def get_manifest_files(self):
         
         def download_manifest_files():
-            """Download and save manifest definitions files."""
+            """Download and save manifest definition files."""
             
             headers = {'X-API-Key': str(self.api_key)}
             get_manifest = requests.get(url=self.manifest_url, headers=headers)
@@ -62,7 +66,7 @@ class Manifest:
                                 'DestinyRaceDefinition',
                                 'DestinyActivityDefinition']
             
-            for definition in definition_keys:
+            for definition in tqdm(definition_keys, desc='Fetching manifest files'):
                 download_manifest_url = 'http://www.bungie.net' + \
                     manifest_data['Response']['jsonWorldComponentContentPaths']['en'] \
                         [definition]

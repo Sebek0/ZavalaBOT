@@ -7,6 +7,7 @@ import discord
 
 from discord import app_commands
 from discord.ext import commands
+from bungie_api_wrapper import BAPI
 from dotenv import load_dotenv
 from bungie_api_wrapper.manifest import Manifest
 from bungie_api_wrapper.async_main import *
@@ -27,29 +28,59 @@ class GuardianCog(commands.GroupCog, name='guardian'):
         super().__init__()
         self.url = 'https://cdn.discordapp.com/icons/585134417568202836/a_d6a73cfaf80df5157ddf2e889c49ba73.gif?size=1024'
         
-    @app_commands.command(name='check', description='Check Destiny 2 characters loadout')
+    @app_commands.command(name='check', description='Check Destiny2 character loadout - '
+                          'Steam: `3`, PSN: `2`, XBOX: `1`')
     async def guardian_check(self, interaction: discord.Interaction,
-                             username: str = None):
+                             username: str = None, platform: int = 3):
+        
+        API_KEY = os.getenv('BUNGIE_API_KEY')
+        destiny = BAPI(API_KEY)
+
         if username is None:
-            await interaction.response.send_modal(CheckModal())
+            await interaction.response.send_message('Try again and fill username field!', ephemeral=True)
+            #await interaction.response.send_modal(CheckModal())
             logger.info(f'{interaction.user.display_name} used modal guardian check command.')
         else:
             await interaction.response.defer()
+            
             command_author_id = interaction.user.id
             username = str(username)
             name = username.split('#')[0]
             code = int(username.split('#')[1])
             man = Manifest()
-                      
+            
+            
+            # Initial request to find out if user have more than one membership
+            # linked to his account.
+            try:
+                # fetch user membershipId from API request
+                destiny_membership = await destiny.api.post_search_destiny_player(
+                    platform, {'displayName': name, 'displayNameCode': code})
+                
+                destiny_membership_id = destiny_membership['Response'][0]['membershipId']
+                
+                if destiny_membership['Response'][0]['crossSaveOverride'] != 0:
+                    linked_profiles = await destiny.api.get_linked_profiles(
+                        destiny_membership_id, 3, 'false')
+
+                    for profile in linked_profiles['Response']['profiles']:
+                        if profile['isCrossSavePrimary']:
+                            destiny_membership_id = profile['membershipId']
+                            platform = profile['membershipType']
+            except Exception as error:
+                logger.error(error)
+                 
             self.characters_data = {}
             self.characters_history = {}
             
             # this thing makes it possible to gather multiple request in the same
-            # time, doing that makes overall time for command to execute is halfed.
+            # time. Doing it this way reduces the command execution time by half.
             async def fetch_characters(self):
-                self.characters_data = await get_characters(name, code, 3)
+                self.characters_data = await get_characters(destiny_membership_id,
+                                                            platform)
             async def fetch_history(self):
-                self.characters_history = await get_character_history(name, code, 3)
+                self.characters_history = await get_character_history(destiny_membership_id,
+                                                                      platform)
                 
             await asyncio.gather(
                 fetch_characters(self),
@@ -101,6 +132,7 @@ class GuardianCog(commands.GroupCog, name='guardian'):
                             In-game time: **{int(in_game_time)} hours**'
                 )
 
+            await destiny.close()
             embed.set_author(name=username)
             embed.set_footer(text='ZEN • Commander Zavala @2022', icon_url=self.url)
             await interaction.followup.send(embed=embed, view=class_view)

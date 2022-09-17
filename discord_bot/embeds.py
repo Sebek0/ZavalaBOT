@@ -1,5 +1,6 @@
 import logging
 import textwrap
+import json
 
 import discord
 
@@ -15,6 +16,17 @@ class ClassEmbed(discord.Embed):
         
     async def embed(self, character_class_name, color, user_name, class_icon):
         d = self.decoded_data[str(character_class_name)]
+        
+        armor_parts = ['Helmet', 'Guantlets', 'Chest Armor', 'Leg Armor', 'Class Armor']
+        with open('decoded_char.json', 'w') as file:
+            json.dump(d, indent=2, sort_keys=True, fp=file)
+        for armor in armor_parts:
+            if not armor in d['items']:
+                d['items'][armor] = {
+                    'common_data': {'item_name': 'Undefined'},
+                    'perks': {'Undefined': {'name': 'None'}}
+                }
+             
         class_embed = discord.Embed(
             color=color,
             title=f'{character_class_name}',
@@ -35,68 +47,122 @@ class ClassEmbed(discord.Embed):
                 .format(d['raceName'], d['light'], last_time_login, int(in_game_time)),
             inline=False
         )
+        ############################ WEAPONS ################################
+        # WEAPON PERKS AND STATS
         kinetic_perks = ''
+        kinetic_stats = ''
         energy_perks = ''
+        energy_stats = ''
         power_perks = ''
+        power_stats = ''
         
+        # Format weapon string
+        # STATS
+        try:
+            for k, v in d['items']['Kinetic Weapons']['stats'].items():
+                kinetic_stats += f'> {k}: {v["value"]}\n'
+            for k, v in d['items']['Energy Weapons']['stats'].items():
+                energy_stats += f'> {k}: {v["value"]}\n'
+            for k, v in d['items']['Power Weapons']['stats'].items():
+                power_stats += f'> {k}: {v["value"]}\n'
+        except KeyError as key_error:
+            logger.error(f'KeyError: {key_error} in weapons stats {k}')
+        
+        # PERKS
         try:
             for v in d['items']['Kinetic Weapons']['perks'].values():
-                kinetic_perks += f'• __{v["name"]} __\n'
+                kinetic_perks += f'> • {v["name"]}\n'
             for v in d['items']['Energy Weapons']['perks'].values():
-                energy_perks += f'• __{v["name"]} __\n'
+                energy_perks += f'> • {v["name"]}\n'
             for v in d['items']['Power Weapons']['perks'].values():
-                power_perks += f'• __{v["name"]} __\n'
+                power_perks += f'> • {v["name"]}\n'
         except KeyError as key_error:
             logger.error(f'KeyError: {key_error} in weapons values {v["name"]}')
             
-            
-        class_embed.add_field(
-            name='<:weapons:1001823859365920838> Items:',
-            value='**Kinetic:** `{}` \n {} \n **Energy:** `{}` \n {} \n **Heavy:** `{}` \n {}' \
-                .format(d['items']['Kinetic Weapons']['common_data']['item_name'],
-                        kinetic_perks,
-                        d['items']['Energy Weapons']['common_data']['item_name'],
-                        energy_perks,
-                        d['items']['Power Weapons']['common_data']['item_name'],
-                        power_perks),
-            inline=True
-        )
+        # Assembling all weapon stats/perks string into embed field
+        try:    
+            class_embed.add_field(
+                name='<:weapons:1001823859365920838> Weapons:',
+                value='**Kinetic:** `{}`\n{}\n{}\n**Energy:** `{}`\n{}\n{}\n**Heavy:** `{}`\n{}\n{}\n' \
+                    .format(d['items']['Kinetic Weapons']['common_data']['item_name'],
+                            kinetic_stats, kinetic_perks,
+                            d['items']['Energy Weapons']['common_data']['item_name'],
+                            energy_stats, energy_perks,
+                            d['items']['Power Weapons']['common_data']['item_name'],
+                            power_stats, power_perks),
+                inline=True
+            )
+        except KeyError as key_error:
+            logger.error(f'KeyError: {key_error} in weapons values {v["name"]}')
         
+        ############################ ARMORS ################################
+        # ARMOR PERKS AND STATS
         helmet_perks = ''
+        helmet_stats = ''
         gauntlets_perks = ''
+        gauntlets_stats = ''
         armor_perks = ''
+        armor_stats = ''
         legs_perks = ''
+        legs_stats = ''
         class_item_perks = ''
+        class_item_stats = ''
         
+        # Format armor string
+        # STATS
+        try:
+            for k, v in d['items']['Helmet']['stats'].items():
+                helmet_stats += f'> {k[:3]}: {v["value"]}\n'
+            for k, v in d['items']['Gauntlets']['stats'].items():
+                gauntlets_stats += f'> {k[:3]}: {v["value"]}\n'
+            for k, v in d['items']['Chest Armor']['stats'].items():
+                armor_stats += f'> {k[:3]}: {v["value"]}\n'
+            for k, v in d['items']['Leg Armor']['stats'].items():
+                legs_stats += f'> {k[:3]}: {v["value"]}\n'
+            for k, v in d['items']['Class Armor']['stats'].items():
+                class_item_stats += f'> {k[:3]}: {v["value"]}\n'
+        except KeyError as key_error:
+            logger.error(f'KeyError: {key_error} in armor stats {k}')
+            
+        # PERKS
         try:
             for v in d['items']['Helmet']['perks'].values():
-                helmet_perks += f'• __{v["name"]} __\n'
+                helmet_perks += f'> • {v["name"]}\n'
             for v in d['items']['Gauntlets']['perks'].values():
-                gauntlets_perks += f'• __{v["name"]} __\n'
+                gauntlets_perks += f'> • {v["name"]}\n'
             for v in d['items']['Chest Armor']['perks'].values():
-                armor_perks += f'• __{v["name"]} __\n'
+                armor_perks += f'> • {v["name"]}\n'
             for v in d['items']['Leg Armor']['perks'].values():
-                legs_perks += f'• __{v["name"]} __\n'
+                legs_perks += f'> • {v["name"]}\n'
             for v in d['items']['Class Armor']['perks'].values():
-                class_item_perks += f'• __{v["name"]} __\n'
+                class_item_perks += f'> • {v["name"]}\n'
         except KeyError as key_error:
             logger.error(f'KeyError: {key_error} in armor values {v["name"]}')
-            
-        class_embed.add_field(
-            name='<:armor:1001823854089482341> Armors:',
-            value='**Helmet:** `{}` \n {} \n **Gauntlets:** `{}` \n {} \n **Armor:** `{}` \n {} \n **Legs:** `{}` \n {} \n **Class:** `{}` \n {}' \
-                .format(d['items']['Helmet']['common_data']['item_name'],
-                        helmet_perks,
-                        d['items']['Gauntlets']['common_data']['item_name'],
-                        gauntlets_perks,
-                        d['items']['Chest Armor']['common_data']['item_name'],
-                        armor_perks,
-                        d['items']['Leg Armor']['common_data']['item_name'],
-                        legs_perks,
-                        d['items']['Class Armor']['common_data']['item_name'],
-                        class_item_perks),
-            inline=True
-        )
+        
+        # Assembling all armor stats/perks string into embed field
+        try:   
+            class_embed.add_field(
+                name='<:armor:1001823854089482341> Armors:',
+                value='**Helmet:** `{}`\n{}\n{}\n**Gauntlets:** `{}`\n{}\n{}\n**Armor:** `{}`\n{}\n{}\n**Legs:** `{}`\n{}\n{}\n**Class:** `{}`\n{}\n{}\n' \
+                    .format(d['items']['Helmet']['common_data']['item_name'],
+                            helmet_stats, helmet_perks,
+                            d['items']['Gauntlets']['common_data']['item_name'],
+                            gauntlets_stats, gauntlets_perks,
+                            d['items']['Chest Armor']['common_data']['item_name'],
+                            armor_stats, armor_perks,
+                            d['items']['Leg Armor']['common_data']['item_name'],
+                            legs_stats, legs_perks,
+                            d['items']['Class Armor']['common_data']['item_name'],
+                            class_item_stats, class_item_perks),
+                inline=True
+            )
+        except KeyError as key_error:
+            logger.error(f'KeyError: {key_error} in armor values {v["name"]}')
+            class_embed.add_field(
+                name='<:armor:1001823854089482341> Armors:',
+                value='**Helmet:** `Undefined` \n None \n **Gauntlets:** `Undefined` \n None \n **Armor:** `Undefined` \n None \n **Legs:** `Undefined` \n None \n **Class:** `Undefined` \n None',
+                inline=True
+            )
         
         temp_icon = 'https://www.bungie.net/common/destiny2_content/icons/ff9ae161808440f0f7def6a9c5857170.png'
         class_embed.set_thumbnail(url=f'https://www.bungie.net/{d["emblemPath"]}')
