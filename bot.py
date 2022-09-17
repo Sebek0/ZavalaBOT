@@ -33,6 +33,7 @@ class Bot(commands.Bot):
     def __init__(self) -> None:
         intents = discord.Intents.all()
         allowed_mentions = discord.AllowedMentions.all()
+        self.manifest = Manifest()
         super().__init__(command_prefix='.', allowed_mentions=allowed_mentions,
                          intents=intents)
         
@@ -68,7 +69,7 @@ class Bot(commands.Bot):
         await self.wait_until_ready()
         while not self.is_closed():
             self.manifest.check_manifest()
-            await asyncio.sleep(86400)
+            await asyncio.sleep(43200)
             
     
 bot = Bot()
