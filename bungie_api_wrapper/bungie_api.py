@@ -30,7 +30,7 @@ class BungieAPI:
             url (str): Bungie API GET endpoint url.
             
         Returns:
-            json: request Response.
+            json_response (json): request Response.
         """
 
         headers = {'X-API-Key': str(self.api_key)}
@@ -51,7 +51,7 @@ class BungieAPI:
             payload (json): POST request body.
             
         Returns:
-            json: request Response.
+            json_response (json): request Response.
         """
         
         headers = {'X-API-Key': str(self.api_key)}
@@ -74,7 +74,7 @@ class BungieAPI:
                 displayNameCode (int): Destiny2 User Code (number after #).
                 
         Returns:
-            json: request Response.
+            _post_request (json): request Response.
         """
         
         url = DESTINY2_URL + 'SearchDestinyPlayerByBungieName/{}/'
@@ -94,7 +94,7 @@ class BungieAPI:
                 Can use either ints or strings.
         
         Returns:
-            json: request Response.
+            _get_request (json): request Response.
         """
         
         url = DESTINY2_URL + '{}/Profile/{}/?components={}'
@@ -110,7 +110,7 @@ class BungieAPI:
             bungie_id (int): Bungie.net membershipId.
             
         Returns:
-            json: request Response.
+            _get_request (json): request Response.
         """
         
         url = USER_URL + 'GetBungieNetUserById/{}/'
@@ -128,7 +128,7 @@ class BungieAPI:
                 displayNameCode (int): Bungie user code.
         
         Returns:
-            json: request Response.
+            _post_request (json): request Response.
         """
         
         url = DESTINY2_URL + 'SearchDestinyPlayerByBungieName/{}/'
@@ -152,7 +152,7 @@ class BungieAPI:
                 request may return multiple pages of users with this name.
                 
         Returns:
-            json: request Response.
+            _get_request (json): request Response.
         """
         
         url = USER_URL + 'Search/Prefix/{}/{}/'
@@ -168,10 +168,10 @@ class BungieAPI:
         
         Args:
             global_name (str): Global Bungie displayName.
-            platform (int): Destiny2 membershipType.
+            platform (int): Destiny2 membershipType
             
         Returns:
-            json: request Response.
+            _get_request (json): request Response.
         """
         
         url = DESTINY2_URL + 'SearchDestinyPlayer/{}/{}/'
@@ -193,7 +193,7 @@ class BungieAPI:
                 string. You must request at least one component to receive results.
         
         Returns:
-            json: request Response.
+            _get_request (json): request Response..
         """
         
         url = DESTINY2_URL + '{}/Profile/{}/?components={}'
@@ -201,7 +201,7 @@ class BungieAPI:
                          ','.join([str(i) for i in components]))
         
         return await self._get_request(url)
-
+    
     async def get_linked_profiles(self, destiny_membership_id, platform,
                                   all_memberships):
         """Returns a summary information about all linked profiles.
@@ -243,7 +243,7 @@ class BungieAPI:
                 string. You must request at least one component to receive results.
                 
         Returns:
-            json: request Response.  
+            _get_request (json): request Response.  
         """
         
         url = DESTINY2_URL + '{}/Profile/{}/Item/{}/?components={}'
@@ -268,7 +268,7 @@ class BungieAPI:
             page (int, optional): Page number to return, starting with 0.
             
         Returns:
-            json: request Response.
+            _get_request (json): request Response.
         """
         
         url = DESTINY2_URL + '{}/Account/{}/Character/{}/Stats/Activities/' \
@@ -293,7 +293,7 @@ class BungieAPI:
                 string. You must request at least one component to receive results.
                 
         Returns:
-            json: request Response.
+            _get_request (json): request Response.
         """
         
         url = DESTINY2_URL + '{}/Profile/{}/Character/{}/?components={}'
@@ -311,7 +311,7 @@ class BungieAPI:
                 Use None for all members.
         
         Returns:
-            json: request Response.
+            _get_request (json): request Response.
         """
         
         url = GROUP_URL + '{}/Members/?memberType=None'
@@ -331,7 +331,7 @@ class BungieAPI:
                 leaderboard stats.
         
         Returns:
-            json: request Response.
+            _get_request (json): request Response.
         """
         
         url = DESTINY2_URL + 'Stats/Leaderboards/Clans/{}/?maxtop={}&modes={}' \
@@ -395,6 +395,9 @@ class BungieAPI:
                          mode, page)
         
         return await self._get_request(url)
+    
+        
+        
     
     
         
